@@ -1,5 +1,8 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using OpenTK.Graphics.OpenGL4;
 
 namespace Window
 {
@@ -11,21 +14,23 @@ namespace Window
         }
 
         public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
-        WinState win_props;
+        State window_state = new State(new WindowSaveState());
         
-        protected override void OnLoad()
+        unsafe protected override void OnLoad()
         {
             base.OnLoad();
 
+            MakeCurrent();
             IsVisible = true;
-            win_props = new WinState(new WindowProperties(Title, Size.X, Size.Y));
+
+            window_state.LoadState(WindowPtr);
         }
 
-        protected override void OnUnload()
+        unsafe protected override void OnUnload()
         {
             base.OnUnload();
-
-            win_props.SaveState();
+            
+            window_state.SaveState(WindowPtr);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -36,11 +41,25 @@ namespace Window
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
+
+            Render();
+        }
+
+        public void Render()
+        {
+            GL.ClearColor(1, 1, 1, 1);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+
+            SwapBuffers();
         }
 
         protected override void OnResize(ResizeEventArgs e)
         {
             base.OnResize(e);
+
+            Render();
+            GL.Viewport(0, 0, e.Width, e.Height);
+            window_state.Resize(e.Width, e.Height);
         }
     }
 }
