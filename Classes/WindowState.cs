@@ -39,6 +39,17 @@ namespace Window
         {
             if (Path.Exists(Window.base_path + "Save/windowstate.txt"))
             {
+                Save();
+            }
+
+            else
+            {
+                Directory.CreateDirectory(Window.base_path + "Save");
+                Save();
+            }
+
+            void Save()
+            {
                 GLFW.GetWindowSize(WindowPtr, out int width, out int height);
                 properties.width = width;
                 properties.height = height;
@@ -55,8 +66,6 @@ namespace Window
                     writer.Write(save_file);
                 }
             }
-
-            else Console.WriteLine("Path does not exist for Window State save.\n" + save_path);
         }
 
         unsafe public void LoadState(OpenTK.Windowing.GraphicsLibraryFramework.Window* WindowPtr)
@@ -68,6 +77,7 @@ namespace Window
                 if (loaded_state.width != 0 && loaded_state.height != 0)
                 {
                     properties = loaded_state;
+                    Console.WriteLine(json);
                 }
 
                 else
@@ -82,11 +92,17 @@ namespace Window
             {
                 properties.positionx = (int)(properties.width / 2);
                 properties.positiony = (int)(properties.height / 2);
+                Console.WriteLine("Window state file path does not exist:\n" + save_path);
             }
 
             GLFW.SetWindowSize(WindowPtr, properties.width, properties.height);
             GLFW.SetWindowPos(WindowPtr, properties.positionx, properties.positiony);
-            if (properties.maximized) GLFW.MaximizeWindow(WindowPtr);
+            if (properties.maximized)
+            {
+                GLFW.MaximizeWindow(WindowPtr);
+                Console.WriteLine("Maximized Window");
+            }
+            
         }
 
         public void Resize(int Width, int Height)
