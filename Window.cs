@@ -1,20 +1,31 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
-namespace Modine
+namespace Window
 {
     class Window : GameWindow
     {
-        public Window(NativeWindowSettings window_settings) : base(GameWindowSettings.Default, window_settings)
+        public Window(NativeWindowSettings win) : base(GameWindowSettings.Default, win)
         {
             CenterWindow();
         }
 
+        public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
+        WinState win_props;
+        
         protected override void OnLoad()
         {
             base.OnLoad();
 
             IsVisible = true;
+            win_props = new WinState(new WindowProperties(Title, Size.X, Size.Y));
+        }
+
+        protected override void OnUnload()
+        {
+            base.OnUnload();
+
+            win_props.SaveState();
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
