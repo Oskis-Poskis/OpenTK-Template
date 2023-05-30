@@ -1,5 +1,4 @@
 using System.Text.Json;
-using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Window
@@ -7,7 +6,7 @@ namespace Window
     [Serializable]
     public struct WindowSaveState
     {
-        public string name { get; set; }
+        public string title { get; set; }
         public int width { get; set; }
         public int height { get; set; }
         public int positionx { get; set; }
@@ -16,7 +15,7 @@ namespace Window
 
         public WindowSaveState()
         {
-            this.name = "Template";
+            this.title = "Template";
             this.width = 1200;
             this.height = 800;
             this.positionx = 0;
@@ -34,11 +33,11 @@ namespace Window
         }
 
         JsonSerializerOptions settings = new JsonSerializerOptions{ WriteIndented = true };
-        string save_path = Window.base_path + "Save/window_properties.txt";
+        string save_path = Window.base_path + "Save/windowstate.txt";
 
         unsafe public void SaveState(OpenTK.Windowing.GraphicsLibraryFramework.Window* WindowPtr)
         {
-            if (Path.Exists(Window.base_path + "Save/window_properties.txt"))
+            if (Path.Exists(Window.base_path + "Save/windowstate.txt"))
             {
                 GLFW.GetWindowSize(WindowPtr, out int width, out int height);
                 properties.width = width;
@@ -57,7 +56,7 @@ namespace Window
                 }
             }
 
-            else Console.WriteLine("Path does not exist for window properties save.\n" + save_path);
+            else Console.WriteLine("Path does not exist for Window State save.\n" + save_path);
         }
 
         unsafe public void LoadState(OpenTK.Windowing.GraphicsLibraryFramework.Window* WindowPtr)

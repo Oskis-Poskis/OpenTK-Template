@@ -10,8 +10,6 @@ namespace Window
         {
             NativeWindowSettings window_settings = new()
             {
-                Title = "Template",
-                Size = new Vector2i(1200, 700),
                 WindowBorder = WindowBorder.Resizable,
                 StartVisible = false,
                 StartFocused = true,
