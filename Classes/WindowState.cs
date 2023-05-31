@@ -90,11 +90,13 @@ namespace Window
 
             else
             {
+                properties.title = "Template";
                 properties.positionx = (int)(properties.width / 2);
                 properties.positiony = (int)(properties.height / 2);
                 Console.WriteLine("Window state file path does not exist:\n" + save_path);
             }
 
+            GLFW.SetWindowTitle(WindowPtr, properties.title);
             GLFW.SetWindowSize(WindowPtr, properties.width, properties.height);
             GLFW.SetWindowPos(WindowPtr, properties.positionx, properties.positiony);
             if (properties.maximized)

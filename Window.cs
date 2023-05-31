@@ -63,13 +63,15 @@ namespace Window
             MakeCurrent();
             GL.Enable(EnableCap.DebugOutput);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            VSync = VSyncMode.On;
+            // VSync = VSyncMode.On;
 
             state.LoadState(WindowPtr);
             Title = state.properties.title;
             window = new GUIWindow();
 
             IsVisible = true;
+
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
         }
 
         unsafe protected override void OnUnload()
@@ -79,16 +81,16 @@ namespace Window
             state.SaveState(WindowPtr);
         }
 
-        protected override void OnUpdateFrame(FrameEventArgs args)
+        unsafe protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);
 
             mpos.X = Helper.HelperClass.MapRange(MouseState.Position.X, 0, state.properties.width, -1.0f, 1.0f);
             mpos.Y = Helper.HelperClass.MapRange(MouseState.Position.Y, 0, state.properties.height, 1.0f, -1.0f);
 
-            if (window.IsHoveringAnyEdge | window.isResizing)
+            if (window.IsWindowHovered() | window.isResizing)
             {
-                window.ResizeWindow(IsMouseButtonDown(MouseButton.Button1));
+                window.TransformWindow(IsMouseButtonDown(MouseButton.Button1));
                 Cursor = window.cursor;
             }
             else Cursor = MouseCursor.Default;
@@ -103,24 +105,25 @@ namespace Window
             Title = stats.fps.ToString("0.0");
         }
 
+        protected override void OnResize(ResizeEventArgs e)
+        {
+            base.OnResize(e);
+
+            GL.Viewport(0, 0, e.Width, e.Height);
+            state.Resize(e.Width, e.Height);
+
+            if (window != null) Render();
+        }
+
         public void Render()
         {
             GL.ClearColor(0, 0, 0, 1);
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GUIWindow_S.Use();
-            window.Update(MouseState, state.properties.width, state.properties.height);
+            window.Render(MouseState, state.properties.width, state.properties.height);
 
             SwapBuffers();
-        }
-
-        protected override void OnResize(ResizeEventArgs e)
-        {
-            base.OnResize(e);
-
-            Render();
-            GL.Viewport(0, 0, e.Width, e.Height);
-            state.Resize(e.Width, e.Height);
         }
 
         bool enter_fullscreen = false;
