@@ -16,14 +16,15 @@ namespace Window.Rendering
         float LeftEdge = -0.5f;
 
         float edgeThreshold = 0.01f;
-        float topBarThickness = 0.2f;
+        float topBarThickness = 0.05f;
         float min_windowSize = 0.05f;
 
         public bool[] EdgesHover = new bool[4];
         public bool IsHoveringAnyEdge = false;
         public bool IsActive = false;
-        public bool isResizing = false;
-        public bool isMoving = false;
+        public bool IsResizing = false;
+        public bool IsMoving = false;
+        public bool IsHoveringTopBar = false;
 
         private int vaoHandle, vboHandle;
 
@@ -70,30 +71,72 @@ namespace Window.Rendering
             EdgesHover[0] = (posx >= LeftEdge - edgeThreshold && posx <= LeftEdge + edgeThreshold) && (posy < TopEdge + topBarThickness) && (posy > BottomEdge);
             EdgesHover[1] = (posx >= RightEdge - edgeThreshold && posx <= RightEdge + edgeThreshold) && (posy < TopEdge + topBarThickness) && (posy > BottomEdge);
             EdgesHover[2] = (posy >= BottomEdge - edgeThreshold && posy <= BottomEdge + edgeThreshold) && (posx > LeftEdge) && (posx < RightEdge);
-            EdgesHover[3] = (posy >= TopEdge - edgeThreshold + topBarThickness && posy <= TopEdge + edgeThreshold + topBarThickness) && (posx > LeftEdge) && (posx < RightEdge);
+            EdgesHover[3] = (posy >= TopEdge + topBarThickness - edgeThreshold && posy <= TopEdge + edgeThreshold + topBarThickness) && (posx > LeftEdge) && (posx < RightEdge);
+            
+            IsHoveringTopBar = (posx >= LeftEdge + edgeThreshold && posx <= RightEdge - edgeThreshold) && (posy >= TopEdge && posy <= TopEdge - edgeThreshold + topBarThickness);
             IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 12);
         }
 
-        float prevXpos = 0;
-        float prevYpos = 0;
-        public void TransformWindow(bool leftClick)
+        float initialXPos = 0;
+        float initialYPos = 0;
+        public void TransformWindow(bool leftClick, bool altDown)
         {
             float xpos = Window.mpos.X;
             float ypos = Window.mpos.Y;
 
-            if (IsHoveringAnyEdge)
+            if ((IsHoveringTopBar | IsMoving) | (IsWindowHovered() && altDown))
             {
+                if (leftClick)
+                {
+                    if (!IsMoving)
+                    {
+                        initialXPos = xpos;
+                        initialYPos = ypos;
+                    }
+
+                    Window.GUIWindow_S.SetVector3("col", new Vector3(1, 0, 0));
+                    IsMoving = true;
+
+                    float xOffset = xpos - initialXPos;
+                    float yOffset = ypos - initialYPos;
+
+                    TopEdge += yOffset;
+                    BottomEdge += yOffset;
+                    LeftEdge += xOffset;
+                    RightEdge += xOffset;
+
+                    for (int i = 0; i < window_vertices.Length; i += 2)
+                    {
+                        window_vertices[i] += xOffset;
+                        window_vertices[i + 1] += yOffset;
+                    }
+
+                    initialXPos = xpos;
+                    initialYPos = ypos;
+                }
+                
+                else
+                {
+                    Window.GUIWindow_S.SetVector3("col", new Vector3(1, 1, 0));
+                    cursor = MouseCursor.Default;
+                    IsMoving = false;
+                }
+            }
+
+            else if (IsHoveringAnyEdge)
+            {
+                Window.GUIWindow_S.SetVector3("col", new(0, 1, 0));
                 // Check TopEdge for hover
-                if ((EdgesHover[3] | isResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2])
+                if ((EdgesHover[3] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2])
                 {
                     cursor = MouseCursor.VResize;
                     if (leftClick)
                     {
                         if (MathHelper.Abs(ypos - topBarThickness - BottomEdge) > min_windowSize)
                         {
-                            isResizing = true;
+                            IsResizing = true;
                             TopEdge = ypos - topBarThickness;
                             
                             window_vertices[3] = TopEdge;
@@ -109,18 +152,18 @@ namespace Window.Rendering
                             window_vertices[23] = TopEdge;
                         }
                     }
-                    else isResizing = false;
+                    else IsResizing = false;
                 }
 
                 // Check RightEdge for hover
-                else if ((EdgesHover[1] | isResizing) && !EdgesHover[0] && !EdgesHover[2] && !EdgesHover[3])
+                else if ((EdgesHover[1] | IsResizing) && !EdgesHover[0] && !EdgesHover[2] && !EdgesHover[3])
                 {
                     cursor = MouseCursor.HResize;
                     if (leftClick)
                     {
-                        if (MathHelper.Abs(xpos - LeftEdge) > min_windowSize)
+                        if (xpos > LeftEdge + min_windowSize)
                         {
-                            isResizing = true;
+                            IsResizing = true;
                             RightEdge = Window.mpos.X;
 
                             window_vertices[4] = RightEdge;
@@ -132,18 +175,18 @@ namespace Window.Rendering
                             window_vertices[22] = RightEdge;
                         }
                     }
-                    else isResizing = false;
+                    else IsResizing = false;
                 }
 
                 // Check BottomEdge for hover
-                else if ((EdgesHover[2] | isResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[3])
+                else if ((EdgesHover[2] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[3])
                 {
                     cursor = MouseCursor.VResize;
                     if (leftClick)
                     {
-                        if (MathHelper.Abs(ypos - TopEdge) > min_windowSize)
+                        if (ypos < TopEdge - min_windowSize)
                         {
-                            isResizing = true;
+                            IsResizing = true;
                             BottomEdge = Window.mpos.Y;
 
                             window_vertices[1] = BottomEdge;
@@ -151,18 +194,18 @@ namespace Window.Rendering
                             window_vertices[11] = BottomEdge;
                         }
                     }
-                    else isResizing = false;
+                    else IsResizing = false;
                 }
 
                 // Check LeftEdge for hover
-                else if ((EdgesHover[0] | isResizing) && !EdgesHover[1] && !EdgesHover[2] && !EdgesHover[3])
+                else if ((EdgesHover[0] | IsResizing) && !EdgesHover[1] && !EdgesHover[2] && !EdgesHover[3])
                 {
                     cursor = MouseCursor.HResize;
                     if (leftClick)
                     {
-                        if (MathHelper.Abs(xpos - RightEdge) > min_windowSize)
+                        if (xpos < RightEdge - min_windowSize)
                         {
-                            isResizing = true;
+                            IsResizing = true;
                             LeftEdge = Window.mpos.X;
 
                             window_vertices[0] = LeftEdge;
@@ -174,45 +217,18 @@ namespace Window.Rendering
                             window_vertices[18] = LeftEdge;
                         }
                     }
-                    else isResizing = false;
+                    else IsResizing = false;
                 }
-
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
-                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
             }
 
             else
             {
                 cursor = MouseCursor.Default;
+                Window.GUIWindow_S.SetVector3("col", new(0.5f));
             }
 
-            /*if (((xpos < RightEdge) && (xpos > LeftEdge) && (ypos < TopEdge + topBarThickness) && (ypos > TopEdge) && !isResizing) | isMoving)
-            {
-                if (leftClick)
-                {
-                    isMoving = true;
-
-                    float dx = xpos - prevXpos;
-                    float dy = ypos - prevYpos;
-
-                    for (int i = 0; i < window_vertices.Length; i += 2)
-                    {
-                        window_vertices[i] += dx;
-                        window_vertices[i + 1] += dy;
-                    }
-
-                    prevXpos = xpos;
-                    prevYpos = ypos;
-                }
-
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
-                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
-            }
-
-            else
-            {
-                isMoving = false;
-            }*/
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
+            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
         }
 
         public bool IsWindowHovered()

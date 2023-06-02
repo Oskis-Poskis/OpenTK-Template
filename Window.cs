@@ -24,7 +24,7 @@ namespace Window
         public static Vector2 mpos;
 
         public static GUIWindow window;
-        Shader GUIWindow_S;
+        public static Shader GUIWindow_S;
 
         Helper.FPScounter stats = new();
 
@@ -63,15 +63,14 @@ namespace Window
             MakeCurrent();
             GL.Enable(EnableCap.DebugOutput);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            // VSync = VSyncMode.On;
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            VSync = VSyncMode.On;
 
             state.LoadState(WindowPtr);
             Title = state.properties.title;
             window = new GUIWindow();
 
             IsVisible = true;
-
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
         }
 
         unsafe protected override void OnUnload()
@@ -88,12 +87,16 @@ namespace Window
             mpos.X = Helper.HelperClass.MapRange(MouseState.Position.X, 0, state.properties.width, -1.0f, 1.0f);
             mpos.Y = Helper.HelperClass.MapRange(MouseState.Position.Y, 0, state.properties.height, 1.0f, -1.0f);
 
-            if (window.IsWindowHovered() | window.isResizing)
+            if (window.IsWindowHovered() | window.IsResizing)
             {
-                window.TransformWindow(IsMouseButtonDown(MouseButton.Button1));
+                window.TransformWindow(IsMouseButtonDown(MouseButton.Button1), IsKeyDown(Keys.LeftAlt));
                 Cursor = window.cursor;
             }
-            else Cursor = MouseCursor.Default;
+            else
+            {
+                Cursor = MouseCursor.Default;
+                GUIWindow_S.SetVector3("col", new(0.5f));
+            }
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
