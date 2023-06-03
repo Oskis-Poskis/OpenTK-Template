@@ -10,10 +10,10 @@ namespace Window.Rendering
         string Title = "";
         Vector2i position;
 
-        float TopEdge = 0.5f;
-        float BottomEdge = -0.5f;
-        float RightEdge = 0.5f;
-        float LeftEdge = -0.5f;
+        public float TopEdge = 0.5f;
+        public float BottomEdge = -0.5f;
+        public float RightEdge = 0.5f;
+        public float LeftEdge = -0.5f;
 
         float edgeThreshold = 0.01f;
         float topBarThickness = 0.05f;
@@ -21,19 +21,19 @@ namespace Window.Rendering
 
         public bool[] EdgesHover = new bool[4];
         public bool IsHoveringAnyEdge = false;
+        public bool IsHoveringTopBar = false;
         public bool IsActive = false;
         public bool IsResizing = false;
         public bool IsMoving = false;
-        public bool IsHoveringTopBar = false;
 
         private int vaoHandle, vboHandle;
 
         public float[] window_vertices = new float[12];
         public MouseCursor cursor = MouseCursor.Default;
 
-        public GUIWindow()
+        public GUIWindow(int programWidth, int programHeight)
         {
-            window_vertices = new[]
+            window_vertices = new[] 
             {
                 LeftEdge, BottomEdge,
                 LeftEdge, TopEdge,
@@ -61,9 +61,11 @@ namespace Window.Rendering
         
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+
+            CalculateWindowScaling();
         }
 
-        public void Render(MouseState mouseState, int windowWidth, int windowHeight)
+        public void Render(MouseState mouseState)
         {
             float posx = Window.mpos.X;
             float posy = Window.mpos.Y;
@@ -76,6 +78,7 @@ namespace Window.Rendering
             IsHoveringTopBar = (posx >= LeftEdge + edgeThreshold && posx <= RightEdge - edgeThreshold) && (posy >= TopEdge && posy <= TopEdge - edgeThreshold + topBarThickness);
             IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
 
+            GL.BindVertexArray(vaoHandle);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 12);
         }
 
@@ -128,28 +131,27 @@ namespace Window.Rendering
             else if (IsHoveringAnyEdge)
             {
                 Window.GUIWindow_S.SetVector3("col", new(0, 1, 0));
+                int[] topIndices = { 3, 5, 9, 13, 19, 23 };
+                int[] rightIndices = { 4, 8, 10, 16, 20, 22 };
+                int[] bottomIndices = { 1, 7, 11 };
+                int[] leftIndices = { 0, 2, 6, 12, 14, 18 };
+
                 // Check TopEdge for hover
                 if ((EdgesHover[3] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2])
                 {
                     cursor = MouseCursor.VResize;
                     if (leftClick)
                     {
-                        if (MathHelper.Abs(ypos - topBarThickness - BottomEdge) > min_windowSize)
+                        if (ypos > BottomEdge + topBarThickness + min_windowSize)
                         {
                             IsResizing = true;
                             TopEdge = ypos - topBarThickness;
                             
-                            window_vertices[3] = TopEdge;
-                            window_vertices[5] = TopEdge;
-                            window_vertices[9] = TopEdge;
+                            foreach (int index in topIndices) window_vertices[index] = TopEdge;
 
-                            window_vertices[13] = TopEdge;
                             window_vertices[15] = TopEdge + topBarThickness;
                             window_vertices[17] = TopEdge + topBarThickness;
-
-                            window_vertices[19] = TopEdge;
                             window_vertices[21] = TopEdge + topBarThickness;
-                            window_vertices[23] = TopEdge;
                         }
                     }
                     else IsResizing = false;
@@ -165,14 +167,7 @@ namespace Window.Rendering
                         {
                             IsResizing = true;
                             RightEdge = Window.mpos.X;
-
-                            window_vertices[4] = RightEdge;
-                            window_vertices[8] = RightEdge;
-                            window_vertices[10] = RightEdge;
-
-                            window_vertices[16] = RightEdge;
-                            window_vertices[20] = RightEdge;
-                            window_vertices[22] = RightEdge;
+                            foreach (int index in rightIndices) window_vertices[index] = RightEdge;
                         }
                     }
                     else IsResizing = false;
@@ -188,10 +183,7 @@ namespace Window.Rendering
                         {
                             IsResizing = true;
                             BottomEdge = Window.mpos.Y;
-
-                            window_vertices[1] = BottomEdge;
-                            window_vertices[7] = BottomEdge;
-                            window_vertices[11] = BottomEdge;
+                            foreach (int index in bottomIndices) window_vertices[index] = BottomEdge;
                         }
                     }
                     else IsResizing = false;
@@ -207,14 +199,7 @@ namespace Window.Rendering
                         {
                             IsResizing = true;
                             LeftEdge = Window.mpos.X;
-
-                            window_vertices[0] = LeftEdge;
-                            window_vertices[2] = LeftEdge;
-                            window_vertices[6] = LeftEdge;
-
-                            window_vertices[12] = LeftEdge;
-                            window_vertices[14] = LeftEdge;
-                            window_vertices[18] = LeftEdge;
+                            foreach (int index in leftIndices) window_vertices[index] = LeftEdge;
                         }
                     }
                     else IsResizing = false;
@@ -229,6 +214,30 @@ namespace Window.Rendering
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
             GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
+        }
+
+        float storedAspect = 1;
+        public void CalculateWindowScaling()
+        {
+            float aspect = (float)Window.size.X / Window.size.Y;
+
+            if (storedAspect != aspect)
+            {
+                float scaleFactor = storedAspect / aspect;
+
+                LeftEdge *= scaleFactor;
+                RightEdge *= scaleFactor;
+
+                for (int i = 0; i < window_vertices.Length; i += 2)
+                {
+                    window_vertices[i] *= scaleFactor;
+                }
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
+                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
+
+                storedAspect = aspect;
+            }
         }
 
         public bool IsWindowHovered()

@@ -1,13 +1,15 @@
+using OpenTK.Mathematics;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using OpenTK.Graphics.OpenGL4;
+using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using Window.Rendering;
 using Window.Common;
+using Window.Rendering;
+using Window.Helper;
+
 using System.Runtime.InteropServices;
-using OpenTK.Mathematics;
-using OpenTK.Windowing.Common.Input;
 
 namespace Window
 {
@@ -17,6 +19,7 @@ namespace Window
         {
             CenterWindow();
             GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag");
+            size = win.Size;
         }
 
         public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
@@ -27,6 +30,7 @@ namespace Window
         public static Shader GUIWindow_S;
 
         Helper.FPScounter stats = new();
+        public static Vector2i size;
 
         private static void OnDebugMessage(
             DebugSource source,     // Source of the debugging message.
@@ -63,12 +67,12 @@ namespace Window
             MakeCurrent();
             GL.Enable(EnableCap.DebugOutput);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             VSync = VSyncMode.On;
 
             state.LoadState(WindowPtr);
             Title = state.properties.title;
-            window = new GUIWindow();
+            window = new GUIWindow(size.X, size.Y);
 
             IsVisible = true;
         }
@@ -108,14 +112,19 @@ namespace Window
             Title = stats.fps.ToString("0.0");
         }
 
-        protected override void OnResize(ResizeEventArgs e)
+        unsafe protected override void OnResize(ResizeEventArgs e)
         {
             base.OnResize(e);
 
             GL.Viewport(0, 0, e.Width, e.Height);
             state.Resize(e.Width, e.Height);
 
-            if (window != null) Render();
+            if (window != null)
+            {
+                Render();
+                size = new(e.Width, e.Height);
+                window.CalculateWindowScaling();
+            }
         }
 
         public void Render()
@@ -124,7 +133,7 @@ namespace Window
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GUIWindow_S.Use();
-            window.Render(MouseState, state.properties.width, state.properties.height);
+            window.Render(MouseState);
 
             SwapBuffers();
         }
@@ -136,7 +145,7 @@ namespace Window
 
             if (e.Key == Keys.F11)
             {
-                enter_fullscreen = Helper.HelperClass.ToggleBool(enter_fullscreen);
+                enter_fullscreen = HelperClass.ToggleBool(enter_fullscreen);
                 if (enter_fullscreen) GLFW.MaximizeWindow(WindowPtr);
                 else GLFW.RestoreWindow(WindowPtr);
             }
