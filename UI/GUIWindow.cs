@@ -3,6 +3,8 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common.Input;
 
+using Window.Helper;
+
 namespace Window.Rendering
 {
     public class GUIWindow
@@ -32,7 +34,7 @@ namespace Window.Rendering
 
         private Vector2 zero = Vector2.Zero;
 
-        public GUIWindow(string title, Vector2 position)
+        public GUIWindow(string title, int width, int height, Vector2 position)
         {
             this.Title = title;
 
@@ -113,8 +115,6 @@ namespace Window.Rendering
 
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
-
-            CalculateWindowScaling();
         }
 
         public void Render(MouseState mouseState)
@@ -223,7 +223,7 @@ namespace Window.Rendering
                             if (xpos > LeftEdge + min_windowSize)
                             {
                                 IsResizing = true;
-                                RightEdge = Window.mouse_pos.X;
+                                RightEdge = xpos;
                                 
                                 window_vertices[4] = RightEdge;
                                 window_vertices[6] = RightEdge;
@@ -264,7 +264,7 @@ namespace Window.Rendering
                             if (xpos < RightEdge - min_windowSize)
                             {
                                 IsResizing = true;
-                                LeftEdge = Window.mouse_pos.X;
+                                LeftEdge = xpos;
 
                                 window_vertices[0] = LeftEdge;
                                 window_vertices[2] = LeftEdge;
@@ -284,30 +284,6 @@ namespace Window.Rendering
             }
 
             else cursor = MouseCursor.Default;
-        }
-
-        float storedAspect = 1;
-        public void CalculateWindowScaling()
-        {
-            float aspect = (float)Window.size.X / Window.size.Y;
-
-            if (storedAspect != aspect)
-            {
-                float scaleFactor = storedAspect / aspect;
-
-                LeftEdge *= scaleFactor;
-                RightEdge *= scaleFactor;
-
-                for (int i = 0; i < window_vertices.Length; i += 2)
-                {
-                    window_vertices[i] *= scaleFactor;
-                }
-
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
-                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
-
-                storedAspect = aspect;
-            }
         }
 
         public bool IsWindowHovered()

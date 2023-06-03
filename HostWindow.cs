@@ -21,9 +21,9 @@ namespace Window
             GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
             size = win.Size;
 
-            GUIWindow window1 = new GUIWindow("Window1", Vector2.Zero);
-            GUIWindow window2 = new GUIWindow("Window2", Vector2.Zero);
-            GUIWindow window3 = new GUIWindow("Window3", Vector2.Zero);
+            GUIWindow window1 = new GUIWindow("Window1", 500, 500, Vector2.Zero);
+            GUIWindow window2 = new GUIWindow("Window2", 500, 500, Vector2.Zero);
+            GUIWindow window3 = new GUIWindow("Window3", 500, 500, Vector2.Zero);
 
             windows = new List<GUIWindow>();
             windows.Add(window1);
@@ -81,7 +81,6 @@ namespace Window
             // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             VSync = VSyncMode.Off;
 
-            state.LoadState(WindowPtr);
             Title = state.properties.title;
 
             IsVisible = true;
@@ -141,7 +140,6 @@ namespace Window
             size = new(e.Width, e.Height);
 
             Render();
-            foreach (GUIWindow window in windows) window.CalculateWindowScaling();
         }
 
         public void Render()
