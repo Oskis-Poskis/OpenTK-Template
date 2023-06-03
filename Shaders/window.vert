@@ -13,6 +13,7 @@ void main()
 
     UV = aPosition * 0.5 + 0.5;
 
-    if (gl_VertexID >= 6) color = topbar_color;
-    else color = background_color;
+    if (gl_VertexID <= 3) color = background_color;
+    else if (gl_VertexID <= 7) color = topbar_color;
+    else color = vec3(1, 0, 0);
 }
