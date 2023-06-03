@@ -17,7 +17,7 @@ namespace Window.Rendering
         private float edgeThreshold = 0.01f;
         private float topBarThickness = 0.05f;
         private float min_windowSize = 0.05f;
-        private float borderThickness = 0.1f;
+        private float borderThickness = 0.025f;
 
         public bool[] EdgesHover = new bool[4];
         public bool IsHoveringAnyEdge = false;
@@ -228,8 +228,8 @@ namespace Window.Rendering
                                 window_vertices[4] = RightEdge;
                                 window_vertices[6] = RightEdge;
                                 window_vertices[10] = RightEdge;
-                                window_vertices[14] = RightEdge + borderThickness - topBarThickness;
-                                window_vertices[16] = RightEdge + borderThickness - topBarThickness;
+                                window_vertices[14] = RightEdge + borderThickness;
+                                window_vertices[16] = RightEdge + borderThickness;
                             }
                         }
                         else IsResizing = false;
@@ -269,8 +269,8 @@ namespace Window.Rendering
                                 window_vertices[0] = LeftEdge;
                                 window_vertices[2] = LeftEdge;
                                 window_vertices[8] = LeftEdge;
-                                window_vertices[12] = LeftEdge - borderThickness + topBarThickness;
-                                window_vertices[18] = LeftEdge - borderThickness + topBarThickness;
+                                window_vertices[12] = LeftEdge - borderThickness;
+                                window_vertices[18] = LeftEdge - borderThickness;
                             }
                         }
                         else IsResizing = false;

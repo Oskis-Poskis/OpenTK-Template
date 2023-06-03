@@ -79,7 +79,7 @@ namespace Window
             GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
             // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-            VSync = VSyncMode.On;
+            VSync = VSyncMode.Off;
 
             state.LoadState(WindowPtr);
             Title = state.properties.title;
@@ -147,7 +147,7 @@ namespace Window
         public void Render()
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            GL.ClearColor(0, 0, 0, 1);
+            GL.ClearColor(0.75f, 0.75f, 0.75f, 1);
 
             GUIWindow_S.Use();
 
