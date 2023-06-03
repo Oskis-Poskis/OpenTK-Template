@@ -78,7 +78,7 @@ namespace Window
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             VSync = VSyncMode.On;
 
             state.LoadState(WindowPtr);

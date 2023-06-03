@@ -27,7 +27,7 @@ namespace Window.Rendering
 
         private int vaoHandle, vboHandle, eboHandle;
         private float[] window_vertices = new float[32];
-        private uint[] windows_indices = new uint[18];
+        private uint[] window_indices = new uint[18];
         public MouseCursor cursor = MouseCursor.Default;
 
         private Vector2 zero = Vector2.Zero;
@@ -38,44 +38,55 @@ namespace Window.Rendering
 
             window_vertices = new float[]
             {
-                // Main Window
-                LeftEdge,            BottomEdge,          // 0, 1
-                LeftEdge,            TopEdge,             // 2, 3
-                RightEdge,           TopEdge,             // 4, 5
-                RightEdge,           BottomEdge,          // 6, 7
+                // Inner Bottom Left 0
+                LeftEdge,            BottomEdge,
+                // Inner Top Left 1
+                LeftEdge,            TopEdge,
+                // Inner Top Right 2
+                RightEdge,           TopEdge,
+                // Inner Bottom Right 3
+                RightEdge,           BottomEdge,
 
-                // Top Bar
-                LeftEdge,            TopEdge,                    // 8, 9
-                LeftEdge,            TopEdge + topBarThickness,  // 10, 11
-                RightEdge,           TopEdge + topBarThickness,  // 12, 13
-                RightEdge,           TopEdge,                    // 14, 15
-
-                // Inner Border Vertices
-                LeftEdge,            TopEdge + topBarThickness,  // 16, 17
-                RightEdge,           TopEdge + topBarThickness,  // 18, 19
-                RightEdge,           BottomEdge,                 // 20, 21
-                LeftEdge,            BottomEdge,                 // 22, 23
-
-                // Outer Border Vertices
-                LeftEdge - borderThickness,  TopEdge + topBarThickness + borderThickness,  // 24, 25
-                RightEdge + borderThickness, TopEdge + topBarThickness + borderThickness,  // 26, 27
-                RightEdge + borderThickness, BottomEdge - borderThickness,                 // 28, 29
-                LeftEdge - borderThickness,  BottomEdge - borderThickness                  // 30, 31
+                // Topbar Left 4
+                LeftEdge,            TopEdge + topBarThickness,
+                // Topbar Right 5
+                RightEdge,           TopEdge + topBarThickness,
+                
+                // Outer Top Left 6
+                LeftEdge - borderThickness, TopEdge + topBarThickness + borderThickness,
+                // Outer Top Right 7
+                RightEdge + borderThickness, TopEdge + topBarThickness + borderThickness,
+                // Outer Bottom Right 8
+                RightEdge + borderThickness, BottomEdge - borderThickness,
+                // Outer Bottom Left 9
+                LeftEdge - borderThickness, BottomEdge - borderThickness
             };
 
-            windows_indices = new uint[]
+            window_indices = new uint[]
             {
                 // Main Window
                 0, 1, 2,
                 0, 2, 3,
 
                 // Top Bar
-                4, 5, 6,
-                4, 6, 7,
+                1, 4, 5,
+                1, 5, 2,
 
                 // Top Border
-                16, 24, 26,
-                16, 26, 27
+                4, 6, 7,
+                4, 7, 5,
+
+                // Right Border
+                5, 7, 8,
+                5, 8, 3,
+
+                // Bottom Border
+                3, 8, 9,
+                3, 9, 0,
+
+                // Left Border
+                0, 9, 6,
+                0, 6, 1
             };
 
             for (int i = 0; i < window_vertices.Length; i += 2)
@@ -98,7 +109,7 @@ namespace Window.Rendering
         
             eboHandle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, windows_indices.Length * sizeof(uint), windows_indices, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, window_indices.Length * sizeof(uint), window_indices, BufferUsageHint.DynamicDraw);
 
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
@@ -120,15 +131,11 @@ namespace Window.Rendering
             IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
 
             GL.BindVertexArray(vaoHandle);
-            GL.DrawElements(PrimitiveType.Triangles, windows_indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, window_indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
         float initialXPos = 0;
         float initialYPos = 0;
-
-        int[] rightIndices = { 4, 6, 12, 14 };
-        int[] bottomIndices = { 1, 7 };
-        int[] leftIndices = { 0, 2, 8, 10 };
 
         public void TransformWindow(bool leftClick, bool altDown)
         {
@@ -198,10 +205,10 @@ namespace Window.Rendering
 
                                 window_vertices[3] = TopEdge;
                                 window_vertices[5] = TopEdge;
-                                window_vertices[9] = TopEdge;
-                                window_vertices[15] = TopEdge;
+                                window_vertices[9] = TopEdge + topBarThickness;
                                 window_vertices[11] = TopEdge + topBarThickness;
-                                window_vertices[13] = TopEdge + topBarThickness;
+                                window_vertices[13] = TopEdge + topBarThickness + borderThickness;
+                                window_vertices[15] = TopEdge + topBarThickness + borderThickness;
                             }
                         }
                         else IsResizing = false;
@@ -217,7 +224,12 @@ namespace Window.Rendering
                             {
                                 IsResizing = true;
                                 RightEdge = Window.mouse_pos.X;
-                                foreach (int index in rightIndices) window_vertices[index] = RightEdge;
+                                
+                                window_vertices[4] = RightEdge;
+                                window_vertices[6] = RightEdge;
+                                window_vertices[10] = RightEdge;
+                                window_vertices[14] = RightEdge + borderThickness;
+                                window_vertices[16] = RightEdge + borderThickness;
                             }
                         }
                         else IsResizing = false;
@@ -233,7 +245,8 @@ namespace Window.Rendering
                             {
                                 IsResizing = true;
                                 BottomEdge = Window.mouse_pos.Y;
-                                foreach (int index in bottomIndices) window_vertices[index] = BottomEdge;
+                                
+                                
                             }
                         }
                         else IsResizing = false;
@@ -249,7 +262,8 @@ namespace Window.Rendering
                             {
                                 IsResizing = true;
                                 LeftEdge = Window.mouse_pos.X;
-                                foreach (int index in leftIndices) window_vertices[index] = LeftEdge;
+                                
+                                
                             }
                         }
                         else IsResizing = false;
