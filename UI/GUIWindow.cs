@@ -39,18 +39,18 @@ namespace Window.Rendering
             window_vertices = new float[]
             {
                 // Inner Bottom Left 0
-                LeftEdge,            BottomEdge,
+                LeftEdge, BottomEdge,
                 // Inner Top Left 1
-                LeftEdge,            TopEdge,
+                LeftEdge, TopEdge,
                 // Inner Top Right 2
-                RightEdge,           TopEdge,
+                RightEdge, TopEdge,
                 // Inner Bottom Right 3
-                RightEdge,           BottomEdge,
+                RightEdge, BottomEdge,
 
                 // Topbar Left 4
-                LeftEdge,            TopEdge + topBarThickness,
+                LeftEdge, TopEdge + topBarThickness,
                 // Topbar Right 5
-                RightEdge,           TopEdge + topBarThickness,
+                RightEdge, TopEdge + topBarThickness,
                 
                 // Outer Top Left 6
                 LeftEdge - borderThickness, TopEdge + topBarThickness + borderThickness,
@@ -86,7 +86,7 @@ namespace Window.Rendering
 
                 // Left Border
                 0, 9, 6,
-                0, 6, 1
+                0, 6, 4
             };
 
             for (int i = 0; i < window_vertices.Length; i += 2)
@@ -129,7 +129,7 @@ namespace Window.Rendering
             
             IsHoveringTopBar = (posx >= LeftEdge + edgeThreshold && posx <= RightEdge - edgeThreshold) && (posy >= TopEdge && posy <= TopEdge - edgeThreshold + topBarThickness);
             IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
-
+            
             GL.BindVertexArray(vaoHandle);
             GL.DrawElements(PrimitiveType.Triangles, window_indices.Length, DrawElementsType.UnsignedInt, 0);
         }
@@ -228,8 +228,8 @@ namespace Window.Rendering
                                 window_vertices[4] = RightEdge;
                                 window_vertices[6] = RightEdge;
                                 window_vertices[10] = RightEdge;
-                                window_vertices[14] = RightEdge + borderThickness;
-                                window_vertices[16] = RightEdge + borderThickness;
+                                window_vertices[14] = RightEdge + borderThickness - topBarThickness;
+                                window_vertices[16] = RightEdge + borderThickness - topBarThickness;
                             }
                         }
                         else IsResizing = false;
@@ -246,7 +246,10 @@ namespace Window.Rendering
                                 IsResizing = true;
                                 BottomEdge = Window.mouse_pos.Y;
                                 
-                                
+                                window_vertices[1] = BottomEdge;
+                                window_vertices[7] = BottomEdge;
+                                window_vertices[17] = BottomEdge - borderThickness;
+                                window_vertices[19] = BottomEdge - borderThickness;
                             }
                         }
                         else IsResizing = false;
@@ -262,8 +265,12 @@ namespace Window.Rendering
                             {
                                 IsResizing = true;
                                 LeftEdge = Window.mouse_pos.X;
-                                
-                                
+
+                                window_vertices[0] = LeftEdge;
+                                window_vertices[2] = LeftEdge;
+                                window_vertices[8] = LeftEdge;
+                                window_vertices[12] = LeftEdge - borderThickness + topBarThickness;
+                                window_vertices[18] = LeftEdge - borderThickness + topBarThickness;
                             }
                         }
                         else IsResizing = false;

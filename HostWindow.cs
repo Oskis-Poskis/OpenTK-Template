@@ -18,7 +18,7 @@ namespace Window
         public Window(NativeWindowSettings win) : base(GameWindowSettings.Default, win)
         {
             CenterWindow();
-            GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag");
+            GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
             size = win.Size;
 
             GUIWindow window1 = new GUIWindow("Window1", Vector2.Zero);
@@ -78,7 +78,7 @@ namespace Window
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             VSync = VSyncMode.On;
 
             state.LoadState(WindowPtr);
