@@ -20,17 +20,27 @@ namespace Window
             CenterWindow();
             GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag");
             size = win.Size;
+
+            GUIWindow window1 = new GUIWindow("Window1", Vector2.Zero);
+            GUIWindow window2 = new GUIWindow("Window2", Vector2.Zero);
+            GUIWindow window3 = new GUIWindow("Window3", Vector2.Zero);
+
+            windows = new List<GUIWindow>();
+            windows.Add(window1);
+            windows.Add(window2);
+            windows.Add(window3);
         }
 
         public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
         State state = new State(new WindowSaveState());
-        public static Vector2 mpos;
-
-        public static GUIWindow window;
-        public static Shader GUIWindow_S;
 
         Helper.FPScounter stats = new();
         public static Vector2i size;
+        public static Vector2 mouse_pos;
+
+        public static Shader GUIWindow_S;
+        List<GUIWindow> windows;
+        int activeIndex = 0;
 
         private static void OnDebugMessage(
             DebugSource source,     // Source of the debugging message.
@@ -66,13 +76,13 @@ namespace Window
 
             MakeCurrent();
             GL.Enable(EnableCap.DebugOutput);
+            GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
             // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             VSync = VSyncMode.On;
 
             state.LoadState(WindowPtr);
             Title = state.properties.title;
-            window = new GUIWindow(size.X, size.Y);
 
             IsVisible = true;
         }
@@ -88,18 +98,28 @@ namespace Window
         {
             base.OnUpdateFrame(args);
 
-            mpos.X = Helper.HelperClass.MapRange(MouseState.Position.X, 0, state.properties.width, -1.0f, 1.0f);
-            mpos.Y = Helper.HelperClass.MapRange(MouseState.Position.Y, 0, state.properties.height, 1.0f, -1.0f);
+            mouse_pos.X = Helper.HelperClass.MapRange(MouseState.Position.X, 0, state.properties.width, -1.0f, 1.0f);
+            mouse_pos.Y = Helper.HelperClass.MapRange(MouseState.Position.Y, 0, state.properties.height, 1.0f, -1.0f);
 
-            if (window.IsWindowHovered() | window.IsResizing)
+            bool leftDown = IsMouseButtonDown(MouseButton.Button1);
+            bool altDown = IsKeyDown(Keys.LeftAlt);
+
+            for (int i = 0; i < windows.Count; i++)
             {
-                window.TransformWindow(IsMouseButtonDown(MouseButton.Button1), IsKeyDown(Keys.LeftAlt));
-                Cursor = window.cursor;
-            }
-            else
-            {
-                Cursor = MouseCursor.Default;
-                GUIWindow_S.SetVector3("col", new(0.5f));
+                if (IsMouseButtonPressed(MouseButton.Button1) &&
+                    windows[i].IsWindowHovered() &&
+                    !windows[activeIndex].IsResizing &&
+                    !windows[activeIndex].IsMoving &&
+                    !windows[activeIndex].IsWindowHovered())
+                {
+                    activeIndex = i;
+                }
+
+                if (i == activeIndex)
+                {
+                    windows[i].TransformWindow(leftDown, altDown);
+                    Cursor = windows[i].cursor;
+                }
             }
         }
 
@@ -118,22 +138,33 @@ namespace Window
 
             GL.Viewport(0, 0, e.Width, e.Height);
             state.Resize(e.Width, e.Height);
+            size = new(e.Width, e.Height);
 
-            if (window != null)
-            {
-                Render();
-                size = new(e.Width, e.Height);
-                window.CalculateWindowScaling();
-            }
+            Render();
+            foreach (GUIWindow window in windows) window.CalculateWindowScaling();
         }
 
         public void Render()
         {
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.ClearColor(0, 0, 0, 1);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GUIWindow_S.Use();
-            window.Render(MouseState);
+
+            for (int i = 0; i < windows.Count; i++)
+            {
+                if (i == activeIndex)
+                {
+                    GUIWindow_S.SetVector3("shade", new(0.75f));
+                    GUIWindow_S.SetFloat("index", 1.0f);
+                }
+                else
+                {
+                    GUIWindow_S.SetVector3("shade", new(0.5f));
+                    GUIWindow_S.SetFloat("index", 0.0f);
+                }
+                windows[i].Render(MouseState);
+            }
 
             SwapBuffers();
         }
