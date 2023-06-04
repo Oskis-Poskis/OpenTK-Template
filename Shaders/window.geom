@@ -5,7 +5,7 @@ layout(triangle_strip, max_vertices = 3) out;
 
 uniform vec3 topbar_color = vec3(0.2);
 uniform vec3 background_color = vec3(0.15);
-uniform vec3 border_color = vec3(0.05);
+uniform vec3 border_color = vec3(0.075);
 
 out vec3 color;
 

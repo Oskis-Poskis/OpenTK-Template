@@ -15,12 +15,15 @@ namespace Window
 {
     class Window : GameWindow
     {
-        public Window(NativeWindowSettings win) : base(GameWindowSettings.Default, win)
+        unsafe public Window(NativeWindowSettings win) : base(GameWindowSettings.Default, win)
         {
             CenterWindow();
-            GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
-            size = win.Size;
+            
+            state.LoadState(WindowPtr);
+            size = new(state.properties.width, state.properties.height);
+            Title = state.properties.title;
 
+            GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
             GUIWindow window1 = new GUIWindow("Window1", 500, 500, Vector2.Zero);
             GUIWindow window2 = new GUIWindow("Window2", 500, 500, Vector2.Zero);
             GUIWindow window3 = new GUIWindow("Window3", 500, 500, Vector2.Zero);
@@ -79,10 +82,8 @@ namespace Window
             GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
             // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-            VSync = VSyncMode.Off;
-
-            Title = state.properties.title;
-
+            VSync = VSyncMode.On;
+            
             IsVisible = true;
         }
 
@@ -97,8 +98,8 @@ namespace Window
         {
             base.OnUpdateFrame(args);
 
-            mouse_pos.X = Helper.HelperClass.MapRange(MouseState.Position.X, 0, state.properties.width, -1.0f, 1.0f);
-            mouse_pos.Y = Helper.HelperClass.MapRange(MouseState.Position.Y, 0, state.properties.height, 1.0f, -1.0f);
+            mouse_pos.X = MouseState.Position.X;
+            mouse_pos.Y = MouseState.Position.Y;
 
             bool leftDown = IsMouseButtonDown(MouseButton.Button1);
             bool altDown = IsKeyDown(Keys.LeftAlt);
@@ -140,6 +141,7 @@ namespace Window
             size = new(e.Width, e.Height);
 
             Render();
+            foreach(GUIWindow window in windows) window.UpdateVertices();
         }
 
         public void Render()
@@ -178,6 +180,9 @@ namespace Window
                 if (enter_fullscreen) GLFW.MaximizeWindow(WindowPtr);
                 else GLFW.RestoreWindow(WindowPtr);
             }
+
+            else if (e.Key == Keys.KeyPad1) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            else if (e.Key == Keys.KeyPad2) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
         }
     }
 }
