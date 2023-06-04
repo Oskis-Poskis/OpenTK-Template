@@ -5,5 +5,5 @@ uniform float index = 0.0;
 
 void main()
 {
-    gl_Position = vec4(aPosition.x, aPosition.y, -index, 1.0);
+    gl_Position = vec4(aPosition.x, aPosition.y, (-index * 2) / 100, 1.0);
 }

@@ -42,7 +42,7 @@ namespace Window
         public static Vector2 mouse_pos;
 
         public static Shader GUIWindow_S;
-        List<GUIWindow> windows;
+        public static List<GUIWindow> windows;
         int activeIndex = 0;
 
         private static void OnDebugMessage(
@@ -115,7 +115,7 @@ namespace Window
                     activeIndex = i;
                 }
 
-                if (i == activeIndex)
+                if (activeIndex == i)
                 {
                     windows[i].TransformWindow(leftDown, altDown);
                     Cursor = windows[i].cursor;
@@ -156,14 +156,14 @@ namespace Window
                 if (i == activeIndex)
                 {
                     GUIWindow_S.SetVector3("shade", new(0.75f));
-                    GUIWindow_S.SetFloat("index", 1.0f);
+                    windows[i].z_index = 1;
                 }
                 else
                 {
                     GUIWindow_S.SetVector3("shade", new(0.5f));
-                    GUIWindow_S.SetFloat("index", 0.0f);
+                    windows[i].z_index = 0;
                 }
-                windows[i].Render(MouseState);
+                windows[i].Render(MouseState, i == activeIndex);
             }
 
             SwapBuffers();

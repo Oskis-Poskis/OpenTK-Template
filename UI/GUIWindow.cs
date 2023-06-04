@@ -10,6 +10,7 @@ namespace Window.Rendering
     public class GUIWindow
     {
         public string Title;
+        public int z_index;
 
         private float TopEdge = 0.5f;
         private float BottomEdge = -0.5f;
@@ -19,7 +20,7 @@ namespace Window.Rendering
         private float edgeThreshold = 0.01f;
         private float topbar_thickness, topBar_reference = 20f;
         private float min_windowSize = 0.05f;
-        private float border_y, border_x, border_reference = 5f;
+        private float border_y, border_x, border_thickness = 3f;
 
         public bool[] EdgesHover = new bool[4];
         public bool IsHoveringAnyEdge = false;
@@ -34,12 +35,13 @@ namespace Window.Rendering
         public MouseCursor cursor = MouseCursor.Default;
         float xpos, ypos;
 
+        Text text;
+
         public GUIWindow(string title, int width, int height, Vector2 position)
         {
-            this.Title = title;
+            Title = title;
 
             UpdateVertices();
-
             window_indices = new uint[]
             {
                 // Main Window
@@ -91,23 +93,38 @@ namespace Window.Rendering
 
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+
+            text = new(Title, new Vector2(RightEdge - HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2),
+                                          TopEdge + HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2)),
+                                          HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2));
         }
 
-        public void Render(MouseState mouseState)
+        public void Render(MouseState mouseState, bool isActive)
         {
+            Window.GUIWindow_S.SetInt("button", 0);
+            Window.GUIWindow_S.SetFloat("index", z_index);
+
             xpos = HelperClass.MapRange(Window.mouse_pos.X, 0, Window.size.X, -1.0f, 1.0f);
             ypos = HelperClass.MapRange(Window.mouse_pos.Y, 0, Window.size.Y, 1.0f, -1.0f);
 
-            EdgesHover[0] = (xpos >= LeftEdge - edgeThreshold && xpos <= LeftEdge + edgeThreshold) && (ypos < TopEdge + topbar_thickness) && (ypos > BottomEdge);
-            EdgesHover[1] = (xpos >= RightEdge - edgeThreshold && xpos <= RightEdge + edgeThreshold) && (ypos < TopEdge + topbar_thickness) && (ypos > BottomEdge);
-            EdgesHover[2] = (ypos >= BottomEdge - edgeThreshold && ypos <= BottomEdge + edgeThreshold) && (xpos > LeftEdge) && (xpos < RightEdge);
-            EdgesHover[3] = (ypos >= TopEdge + topbar_thickness - edgeThreshold && ypos <= TopEdge + edgeThreshold + topbar_thickness) && (xpos > LeftEdge) && (xpos < RightEdge);
-            
-            IsHoveringTopBar = (xpos >= LeftEdge + edgeThreshold && xpos <= RightEdge - edgeThreshold) && (ypos >= TopEdge && ypos <= TopEdge - edgeThreshold + topbar_thickness);
-            IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
+            if (IsWindowHovered())
+            {
+                EdgesHover[0] = (xpos >= LeftEdge - edgeThreshold && xpos <= LeftEdge + edgeThreshold) && (ypos < TopEdge + topbar_thickness) && (ypos > BottomEdge);
+                EdgesHover[1] = (xpos >= RightEdge - edgeThreshold && xpos <= RightEdge + edgeThreshold) && (ypos < TopEdge + topbar_thickness) && (ypos > BottomEdge);
+                EdgesHover[2] = (ypos >= BottomEdge - edgeThreshold && ypos <= BottomEdge + edgeThreshold) && (xpos > LeftEdge) && (xpos < RightEdge);
+                EdgesHover[3] = (ypos >= TopEdge + topbar_thickness - edgeThreshold && ypos <= TopEdge + edgeThreshold + topbar_thickness) && (xpos > LeftEdge) && (xpos < RightEdge);
+                
+                IsHoveringTopBar = (xpos >= LeftEdge + edgeThreshold && xpos <= RightEdge - edgeThreshold) && (ypos >= TopEdge && ypos <= TopEdge - edgeThreshold + topbar_thickness);
+                IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
+            }
             
             GL.BindVertexArray(vaoHandle);
             GL.DrawElements(PrimitiveType.Triangles, window_indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            Window.GUIWindow_S.SetInt("button", 1);
+            if (isActive) Window.GUIWindow_S.SetFloat("index", z_index + 1);
+            else Window.GUIWindow_S.SetFloat("index", z_index + 0.5f);
+            text.Render();
         }
 
         float initialXPos = 0;
@@ -115,15 +132,15 @@ namespace Window.Rendering
 
         public void TransformWindow(bool leftClick, bool altDown)
         {
+            bool windowHovered = IsWindowHovered();
             xpos = HelperClass.MapRange(Window.mouse_pos.X, 0, Window.size.X, -1.0f, 1.0f);
             ypos = HelperClass.MapRange(Window.mouse_pos.Y, 0, Window.size.Y, 1.0f, -1.0f);
-
-            bool windowHovered = IsWindowHovered();
-            border_y = HelperClass.MapRange(border_reference, 0, Window.size.Y, 0, 2);
-            border_x = HelperClass.MapRange(border_reference, 0, Window.size.X, 0, 2);
+            border_y = HelperClass.MapRange(border_thickness, 0, Window.size.Y, 0, 2);
+            border_x = HelperClass.MapRange(border_thickness, 0, Window.size.X, 0, 2);
 
             if (windowHovered | IsResizing | IsMoving)
             {
+                // Move Window
                 if (IsHoveringTopBar | IsMoving | (windowHovered && altDown))
                 {
                     cursor = MouseCursor.Default;
@@ -156,12 +173,14 @@ namespace Window.Rendering
 
                         GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
                         GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
+
+                        /*foreach (GUIWindow window in Window.windows)
+                        {
+                            if (window.IsHoveringTopBar) Console.WriteLine(window.Title);
+                        }*/
                     }
                     
-                    else
-                    {
-                        IsMoving = false;
-                    }
+                    else IsMoving = false;
                 }
 
                 else if (windowHovered && !IsHoveringTopBar && !IsHoveringAnyEdge)
@@ -175,7 +194,7 @@ namespace Window.Rendering
                     if ((EdgesHover[3] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2])
                     {
                         cursor = MouseCursor.VResize;
-                        if (leftClick)
+                        if (leftClick && Window.mouse_pos.Y > border_thickness)
                         {
                             if (ypos > BottomEdge + topbar_thickness + min_windowSize)
                             {
@@ -197,7 +216,7 @@ namespace Window.Rendering
                     else if ((EdgesHover[1] | IsResizing) && !EdgesHover[0] && !EdgesHover[2] && !EdgesHover[3])
                     {
                         cursor = MouseCursor.HResize;
-                        if (leftClick)
+                        if (leftClick && Window.mouse_pos.X < Window.size.X - border_thickness)
                         {
                             if (xpos > LeftEdge + min_windowSize)
                             {
@@ -218,7 +237,7 @@ namespace Window.Rendering
                     else if ((EdgesHover[2] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[3])
                     {
                         cursor = MouseCursor.VResize;
-                        if (leftClick)
+                        if (leftClick && Window.mouse_pos.Y < Window.size.Y - border_thickness)
                         {
                             if (ypos < TopEdge - min_windowSize)
                             {
@@ -238,7 +257,7 @@ namespace Window.Rendering
                     else if ((EdgesHover[0] | IsResizing) && !EdgesHover[1] && !EdgesHover[2] && !EdgesHover[3])
                     {
                         cursor = MouseCursor.HResize;
-                        if (leftClick)
+                        if (leftClick && Window.mouse_pos.X > border_thickness)
                         {
                             if (xpos < RightEdge - min_windowSize)
                             {
@@ -259,7 +278,11 @@ namespace Window.Rendering
                     GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
                 }
 
-                else cursor = MouseCursor.Default; 
+                else cursor = MouseCursor.Default;
+
+                text.UpdateVertices(new Vector2(RightEdge - HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2),
+                                                TopEdge + HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2)),
+                                                HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2));
             }
 
             else cursor = MouseCursor.Default;
@@ -267,8 +290,8 @@ namespace Window.Rendering
 
         public void UpdateVertices()
         {
-            border_y = HelperClass.MapRange(border_reference, 0, Window.size.Y, 0, 2);
-            border_x = HelperClass.MapRange(border_reference, 0, Window.size.X, 0, 2);
+            border_y = HelperClass.MapRange(border_thickness, 0, Window.size.Y, 0, 2);
+            border_x = HelperClass.MapRange(border_thickness, 0, Window.size.X, 0, 2);
             topbar_thickness = HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2);
 
             window_vertices = new float[]

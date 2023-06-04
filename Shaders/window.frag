@@ -4,8 +4,10 @@ in vec2 UV;
 out vec4 fragColor;
 
 uniform vec3 shade;
+uniform int button;
 
 void main()
 {
-    fragColor = vec4(vec3(color * shade), 1.0);
+    if (button == 0) fragColor = vec4(color * shade, 1.0);
+    else fragColor = vec4(vec3(1), 1.0); 
 }
