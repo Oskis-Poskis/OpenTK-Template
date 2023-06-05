@@ -9,12 +9,25 @@ using Window.Helper;
 
 namespace Window.Rendering
 {
+    public struct GUISettings
+    {
+        public bool collapsable;
+        public bool moveable;
+
+        public GUISettings()
+        {
+            collapsable = true;
+            moveable = true;
+        }
+    }
+
     public class GUIWindow
     {
         public string Title;
         public int z_index;
         float xpos, ypos;
         public MouseCursor cursor = MouseCursor.Default;
+        public GUISettings settings = new GUISettings();
 
         private float TopEdge =     0.5f;
         private float BottomEdge = -0.5f;
@@ -220,7 +233,7 @@ namespace Window.Rendering
                     
                     else IsMoving = false;
 
-                    if (IsHoveringTitleBar)
+                    if (IsHoveringTitleBar && settings.collapsable)
                     {
                         if (IsRectangleHovered(
                             new(RightEdge - collapse_size - border_x, TopEdge + topbar_thickness - border_y),
@@ -234,6 +247,7 @@ namespace Window.Rendering
                                     hover_tint = new(0.4f);
                                 }
                                 UpdateVertices();
+                                Console.WriteLine("Collapsed: " + Title);
                             }
                         }
                     }
@@ -281,7 +295,7 @@ namespace Window.Rendering
                         cursor = MouseCursor.HResize;
                         if (leftDown && Window.mouse_pos.X < Window.size.X - border_reference)
                         {
-                            if (xpos > LeftEdge + min_windowSize)
+                            if (xpos > LeftEdge + collapse_size + border_x * 2)
                             {
                                 IsResizing = true;
                                 RightEdge = xpos;
@@ -324,7 +338,7 @@ namespace Window.Rendering
                         cursor = MouseCursor.HResize;
                         if (leftDown && Window.mouse_pos.X > border_reference)
                         {
-                            if (xpos < RightEdge - min_windowSize)
+                            if (xpos < RightEdge - collapse_size - border_x * 2)
                             {
                                 IsResizing = true;
                                 LeftEdge = xpos;

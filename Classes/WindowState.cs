@@ -77,6 +77,7 @@ namespace Window
                 if (loaded_state.width != 0 && loaded_state.height != 0)
                 {
                     properties = loaded_state;
+                    Console.WriteLine("Succesfully loaded saved window state");
                     Console.WriteLine(json);
                 }
 
