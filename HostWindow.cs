@@ -29,6 +29,7 @@ namespace Window
             for (int i = 0; i < 4; i++)
             {
                 GUIWindow window = new GUIWindow($"Window {i}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
+                if (i == 1) window.settings.collapsable = false;
                 windows.Add(window);
             }
         }

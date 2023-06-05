@@ -168,10 +168,13 @@ namespace Window.Rendering
             }
 
             Window.GUIWindow_S.SetFloat("index", z_index);            
-            Window.GUIWindow_S.SetInt("interaction", 1);
-            Window.GUIWindow_S.SetVector3("tint", hover_tint);
-            GL.BindVertexArray(interactionVAO);
-            GL.DrawElements(PrimitiveType.Triangles, interaction_indices.Length, DrawElementsType.UnsignedInt, 0);
+            if (settings.collapsable)
+            {
+                Window.GUIWindow_S.SetInt("interaction", 1);
+                Window.GUIWindow_S.SetVector3("tint", hover_tint);
+                GL.BindVertexArray(interactionVAO);
+                GL.DrawElements(PrimitiveType.Triangles, interaction_indices.Length, DrawElementsType.UnsignedInt, 0);
+            }
 
             Window.GUIWindow_S.SetInt("interaction", 0);
             GL.BindVertexArray(mainVAO);
