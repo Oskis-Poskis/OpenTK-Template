@@ -28,7 +28,7 @@ namespace Window
             windows = new List<GUIWindow>();
             for (int i = 0; i < 4; i++)
             {
-                GUIWindow window = new GUIWindow($"Window {i}", 500, 500, new(HelperClass.RandFloat() * 0.5f, HelperClass.RandFloat() * 0.5f));
+                GUIWindow window = new GUIWindow($"Window {i}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
                 windows.Add(window);
             }
         }
@@ -53,17 +53,8 @@ namespace Window
             IntPtr pMessage,        // Pointer to message string.
             IntPtr pUserParam)      // The pointer you gave to OpenGL, explained later.
         {
-            // In order to access the string pointed to by pMessage, you can use Marshal
-            // class to copy its contents to a C# string without unsafe code. You can
-            // also use the new function Marshal.PtrToStringUTF8 since .NET Core 1.1.
             string message = Marshal.PtrToStringAnsi(pMessage, length);
-
-            // The rest of the function is up to you to implement, however a debug output
-            // is always useful.
             Console.WriteLine("[{0} source={1} type={2} id={3}] {4}", severity, source, type, id, message);
-
-            // Potentially, you may want to throw from the function for certain severity
-            // messages.
             if (type == DebugType.DebugTypeError)
             {
                 throw new Exception(message);
@@ -101,11 +92,13 @@ namespace Window
             mouse_pos.Y = MouseState.Position.Y;
 
             bool leftDown = IsMouseButtonDown(MouseButton.Button1);
+            bool leftPress = IsMouseButtonPressed(MouseButton.Button1);
+            bool leftReleased = IsMouseButtonReleased(MouseButton.Button1);
             bool altDown = IsKeyDown(Keys.LeftAlt);
 
             for (int i = 0; i < windows.Count; i++)
             {
-                if (IsMouseButtonPressed(MouseButton.Button1) &&
+                if (leftPress &&
                     windows[i].IsWindowHovered() &&
                     !windows[activeIndex].IsResizing &&
                     !windows[activeIndex].IsMoving &&
@@ -117,7 +110,7 @@ namespace Window
 
                 if (activeIndex == i)
                 {
-                    windows[i].TransformWindow(leftDown, altDown);
+                    windows[i].TransformWindow(leftDown, leftPress, leftReleased, altDown);
                     Cursor = windows[i].cursor;
                 }
             }
