@@ -11,33 +11,32 @@ namespace Window.Rendering
     {
         public string Title;
         public int z_index;
+        float xpos, ypos;
+        public MouseCursor cursor = MouseCursor.Default;
 
-        private float TopEdge = 0.5f;
+        private float TopEdge =     0.5f;
         private float BottomEdge = -0.5f;
-        private float RightEdge = 0.5f;
-        private float LeftEdge = -0.5f;
+        private float RightEdge =   0.5f;
+        private float LeftEdge =    -0.5f;
 
-        private float edgeThreshold = 0.01f;
-        private float topbar_thickness, topBar_reference = 20f;
-        private float min_windowSize = 0.05f;
+        private float edgeThreshold =   0.01f;
+        private float min_windowSize =  0.05f;
+        private float topbar_thickness, topBar_reference =  20f;
         private float border_y, border_x, border_thickness = 3f;
 
         public bool[] EdgesHover = new bool[4];
-        public bool IsHoveringAnyEdge = false;
-        public bool IsHoveringTopBar = false;
-        public bool IsResizing = false;
-        public bool IsMoving = false;
+        public bool IsHoveringAnyEdge =  false;
+        public bool IsHoveringTitleBar = false;
+        public bool IsResizing =         false;
+        public bool IsMoving =           false;
 
         private int mainVAO, mainVBO, mainEBO;
-        private float[] window_vertices;
-        private uint[] window_indices;
+        private float[] main_vertices;
+        private uint[] main_indices;
 
-        private int secondaryVAO, secondaryVBO, secondaryEBO;
+        private int interactionVAO, interactionVBO, interactionEBO;
         private float[] interaction_vertices;
         private uint[] interaction_indices;
-
-        public MouseCursor cursor = MouseCursor.Default;
-        float xpos, ypos;
 
         /// <summary>
         /// Create a new window instance, generates vertices and indices
@@ -57,7 +56,7 @@ namespace Window.Rendering
             LeftEdge = -x / 2;
 
             UpdateVertices();
-            window_indices = new uint[]
+            main_indices = new uint[]
             {
                 // Main Window
                 0, 1, 2,
@@ -91,10 +90,10 @@ namespace Window.Rendering
                 0, 2, 3
             };
 
-            for (int i = 0; i < window_vertices.Length; i += 2)
+            for (int i = 0; i < main_vertices.Length; i += 2)
             {
-                window_vertices[i] += position.X;
-                window_vertices[i + 1] += position.Y;
+                main_vertices[i] += position.X;
+                main_vertices[i + 1] += position.Y;
             }
 
             LeftEdge += position.X;
@@ -107,24 +106,24 @@ namespace Window.Rendering
 
             mainVBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, mainVBO);
-            GL.BufferData(BufferTarget.ArrayBuffer, window_vertices.Length * sizeof(float), window_vertices, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, main_vertices.Length * sizeof(float), main_vertices, BufferUsageHint.DynamicDraw);
         
             mainEBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, mainEBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, window_indices.Length * sizeof(uint), window_indices, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, main_indices.Length * sizeof(uint), main_indices, BufferUsageHint.DynamicDraw);
 
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
-            secondaryVAO = GL.GenVertexArray();
-            GL.BindVertexArray(secondaryVAO);
+            interactionVAO = GL.GenVertexArray();
+            GL.BindVertexArray(interactionVAO);
 
-            secondaryVBO = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, secondaryVBO);
+            interactionVBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, interactionVBO);
             GL.BufferData(BufferTarget.ArrayBuffer, interaction_vertices.Length * sizeof(float), interaction_vertices, BufferUsageHint.DynamicDraw);
 
-            secondaryEBO = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, secondaryEBO);
+            interactionEBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, interactionEBO);
             GL.BufferData(BufferTarget.ElementArrayBuffer, interaction_indices.Length * sizeof(uint), interaction_indices, BufferUsageHint.DynamicDraw);
 
             GL.EnableVertexAttribArray(0);
@@ -143,19 +142,19 @@ namespace Window.Rendering
                 EdgesHover[2] = (ypos >= BottomEdge - edgeThreshold && ypos <= BottomEdge + edgeThreshold) && (xpos > LeftEdge) && (xpos < RightEdge);
                 EdgesHover[3] = (ypos >= TopEdge + topbar_thickness - edgeThreshold && ypos <= TopEdge + edgeThreshold + topbar_thickness) && (xpos > LeftEdge) && (xpos < RightEdge);
                 
-                IsHoveringTopBar = (xpos >= LeftEdge + edgeThreshold && xpos <= RightEdge - edgeThreshold) && (ypos >= TopEdge && ypos <= TopEdge - edgeThreshold + topbar_thickness);
+                IsHoveringTitleBar = (xpos >= LeftEdge + edgeThreshold && xpos <= RightEdge - edgeThreshold) && (ypos >= TopEdge && ypos <= TopEdge - edgeThreshold + topbar_thickness);
                 IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
             }
             
             Window.GUIWindow_S.SetFloat("index", z_index);
             Window.GUIWindow_S.SetInt("interaction", 0);
             GL.BindVertexArray(mainVAO);
-            GL.DrawElements(PrimitiveType.Triangles, window_indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, main_indices.Length, DrawElementsType.UnsignedInt, 0);
 
             GL.DepthMask(false);
             // Window.GUIWindow_S.SetFloat("index", z_index + 0.1f / 100);
             Window.GUIWindow_S.SetInt("interaction", 1);
-            GL.BindVertexArray(secondaryVAO);
+            GL.BindVertexArray(interactionVAO);
             GL.DrawElements(PrimitiveType.Triangles, interaction_indices.Length, DrawElementsType.UnsignedInt, 0);
             GL.DepthMask(true);
         }
@@ -174,7 +173,7 @@ namespace Window.Rendering
             if (windowHovered | IsResizing | IsMoving)
             {
                 // Move Window
-                if (IsHoveringTopBar | IsMoving | (windowHovered && altDown))
+                if (IsHoveringTitleBar | IsMoving | (windowHovered && altDown))
                 {
                     cursor = MouseCursor.Default;
                     if (leftClick)
@@ -195,17 +194,17 @@ namespace Window.Rendering
                         LeftEdge += xOffset;
                         RightEdge += xOffset;
 
-                        for (int i = 0; i < window_vertices.Length; i += 2)
+                        for (int i = 0; i < main_vertices.Length; i += 2)
                         {
-                            window_vertices[i] += xOffset;
-                            window_vertices[i + 1] += yOffset;
+                            main_vertices[i] += xOffset;
+                            main_vertices[i + 1] += yOffset;
                         }
 
                         initialXPos = xpos;
                         initialYPos = ypos;
 
                         GL.BindBuffer(BufferTarget.ArrayBuffer, mainVBO);
-                        GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
+                        GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, main_vertices.Length * sizeof(float), main_vertices);
 
                         UpdateSecondaryVertices();
                     }
@@ -213,7 +212,7 @@ namespace Window.Rendering
                     else IsMoving = false;
                 }
 
-                else if (windowHovered && !IsHoveringTopBar && !IsHoveringAnyEdge)
+                else if (windowHovered && !IsHoveringTitleBar && !IsHoveringAnyEdge)
                 {
                     cursor = MouseCursor.Default;
                 }
@@ -231,12 +230,12 @@ namespace Window.Rendering
                                 IsResizing = true;
                                 TopEdge = ypos - topbar_thickness;
 
-                                window_vertices[3] = TopEdge;
-                                window_vertices[5] = TopEdge;
-                                window_vertices[9] = TopEdge + topbar_thickness;
-                                window_vertices[11] = TopEdge + topbar_thickness;
-                                window_vertices[13] = TopEdge + topbar_thickness + border_y;
-                                window_vertices[15] = TopEdge + topbar_thickness + border_y;
+                                main_vertices[3] = TopEdge;
+                                main_vertices[5] = TopEdge;
+                                main_vertices[9] = TopEdge + topbar_thickness;
+                                main_vertices[11] = TopEdge + topbar_thickness;
+                                main_vertices[13] = TopEdge + topbar_thickness + border_y;
+                                main_vertices[15] = TopEdge + topbar_thickness + border_y;
 
                                 UpdateSecondaryVertices();
                             }
@@ -255,11 +254,11 @@ namespace Window.Rendering
                                 IsResizing = true;
                                 RightEdge = xpos;
                                 
-                                window_vertices[4] = RightEdge;
-                                window_vertices[6] = RightEdge;
-                                window_vertices[10] = RightEdge;
-                                window_vertices[14] = RightEdge + border_x;
-                                window_vertices[16] = RightEdge + border_x;
+                                main_vertices[4] = RightEdge;
+                                main_vertices[6] = RightEdge;
+                                main_vertices[10] = RightEdge;
+                                main_vertices[14] = RightEdge + border_x;
+                                main_vertices[16] = RightEdge + border_x;
 
                                 UpdateSecondaryVertices();
                             }
@@ -278,10 +277,10 @@ namespace Window.Rendering
                                 IsResizing = true;
                                 BottomEdge = ypos;
                                 
-                                window_vertices[1] = BottomEdge;
-                                window_vertices[7] = BottomEdge;
-                                window_vertices[17] = BottomEdge - border_y;
-                                window_vertices[19] = BottomEdge - border_y;
+                                main_vertices[1] = BottomEdge;
+                                main_vertices[7] = BottomEdge;
+                                main_vertices[17] = BottomEdge - border_y;
+                                main_vertices[19] = BottomEdge - border_y;
                             }
                         }
                         else IsResizing = false;
@@ -298,18 +297,18 @@ namespace Window.Rendering
                                 IsResizing = true;
                                 LeftEdge = xpos;
 
-                                window_vertices[0] = LeftEdge;
-                                window_vertices[2] = LeftEdge;
-                                window_vertices[8] = LeftEdge;
-                                window_vertices[12] = LeftEdge - border_x;
-                                window_vertices[18] = LeftEdge - border_x;
+                                main_vertices[0] = LeftEdge;
+                                main_vertices[2] = LeftEdge;
+                                main_vertices[8] = LeftEdge;
+                                main_vertices[12] = LeftEdge - border_x;
+                                main_vertices[18] = LeftEdge - border_x;
                             }
                         }
                         else IsResizing = false;
                     }
 
                     GL.BindBuffer(BufferTarget.ArrayBuffer, mainVBO);
-                    GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
+                    GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, main_vertices.Length * sizeof(float), main_vertices);
                 }
 
                 else cursor = MouseCursor.Default;
@@ -324,7 +323,7 @@ namespace Window.Rendering
             border_x = HelperClass.MapRange(border_thickness, 0, Window.size.X, 0, 2);
             topbar_thickness = HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2);
 
-            window_vertices = new float[]
+            main_vertices = new float[]
             {
                 // Inner Bottom Left 0
                 LeftEdge, BottomEdge,
@@ -351,7 +350,7 @@ namespace Window.Rendering
             };
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, mainVBO);
-            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, window_vertices.Length * sizeof(float), window_vertices);
+            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, main_vertices.Length * sizeof(float), main_vertices);
 
             UpdateSecondaryVertices();
         }
@@ -369,7 +368,7 @@ namespace Window.Rendering
                 RightEdge, TopEdge
             };
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, secondaryVBO);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, interactionVBO);
             GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, interaction_vertices.Length * sizeof(float), interaction_vertices);
         }
 
