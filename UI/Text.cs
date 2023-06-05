@@ -56,7 +56,7 @@ namespace Window.Rendering
         public void UpdateVertices(Vector2 StartPosition, float height)
         {
             start_pos = StartPosition;
-            this.textHeight = height;
+            textHeight = height;
 
             text_vertices = new float[]
             {

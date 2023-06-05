@@ -24,14 +24,13 @@ namespace Window
             Title = state.properties.title;
 
             GUIWindow_S = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
-            GUIWindow window1 = new GUIWindow("Window1", 500, 500, Vector2.Zero);
-            GUIWindow window2 = new GUIWindow("Window2", 500, 500, Vector2.Zero);
-            GUIWindow window3 = new GUIWindow("Window3", 500, 500, Vector2.Zero);
 
             windows = new List<GUIWindow>();
-            windows.Add(window1);
-            windows.Add(window2);
-            windows.Add(window3);
+            for (int i = 0; i < 4; i++)
+            {
+                GUIWindow window = new GUIWindow($"Window {i}", 500, 500, new(HelperClass.RandFloat() * 0.5f, HelperClass.RandFloat() * 0.5f));
+                windows.Add(window);
+            }
         }
 
         public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
@@ -82,7 +81,7 @@ namespace Window
             GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
             // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-            VSync = VSyncMode.On;
+            VSync = VSyncMode.Off;
             
             IsVisible = true;
         }
@@ -113,6 +112,7 @@ namespace Window
                     !windows[activeIndex].IsWindowHovered())
                 {
                     activeIndex = i;
+                    Console.WriteLine("Selected: " + windows[i].Title);
                 }
 
                 if (activeIndex == i)
@@ -129,7 +129,7 @@ namespace Window
 
             Render();
             stats.Count(args);
-            Title = stats.fps.ToString("0.0");
+            Title = stats.fps.ToString("0.0") + " | " + stats.ms.ToString("0.00");
         }
 
         unsafe protected override void OnResize(ResizeEventArgs e)
@@ -140,8 +140,11 @@ namespace Window
             state.Resize(e.Width, e.Height);
             size = new(e.Width, e.Height);
 
-            Render();
-            foreach(GUIWindow window in windows) window.UpdateVertices();
+            if (GUIWindow_S != null && windows != null)
+            {
+                Render();
+                foreach(GUIWindow window in windows) window.UpdateVertices();
+            }
         }
 
         public void Render()
@@ -150,7 +153,6 @@ namespace Window
             GL.ClearColor(0.75f, 0.75f, 0.75f, 1);
 
             GUIWindow_S.Use();
-
             for (int i = 0; i < windows.Count; i++)
             {
                 if (i == activeIndex)

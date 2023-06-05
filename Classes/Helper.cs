@@ -4,7 +4,7 @@ using OpenTK.Windowing.Common;
 
 namespace Window.Helper
 {
-    public static class HelperClass
+    public class HelperClass
     {
         public static bool ToggleBool(bool toggleBool)
         {
@@ -19,6 +19,12 @@ namespace Window.Helper
         public static float MapRange(float value, float inputMin, float inputMax, float outputMin, float outputMax)
         {
             return ((value - inputMin) / (inputMax - inputMin)) * (outputMax - outputMin) + outputMin;
+        }
+
+        public static float RandFloat()
+        {
+            Random rand = new Random();
+            return (float)rand.NextDouble() * 2 - 1;
         }
     }
 
