@@ -4,7 +4,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 namespace Window
 {
     [Serializable]
-    public struct WindowSaveState
+    public struct WindowProperties
     {
         public string title { get; set; }
         public int width { get; set; }
@@ -13,7 +13,7 @@ namespace Window
         public int positiony { get; set; }
         public bool maximized { get; set; }
 
-        public WindowSaveState()
+        public WindowProperties()
         {
             this.title = "Template";
             this.width = 1200;
@@ -24,10 +24,10 @@ namespace Window
         }
     }
 
-    public class State
+    public class WindowSaveState
     {
-        public WindowSaveState properties = new();
-        public State(WindowSaveState Properties)
+        public WindowProperties properties = new();
+        public WindowSaveState(WindowProperties Properties)
         {
             this.properties = Properties;
         }
@@ -73,7 +73,7 @@ namespace Window
             if (Path.Exists(save_path))
             {
                 string json = File.ReadAllText(save_path);
-                WindowSaveState loaded_state = JsonSerializer.Deserialize<WindowSaveState>(json);
+                WindowProperties loaded_state = JsonSerializer.Deserialize<WindowProperties>(json);
                 if (loaded_state.width != 0 && loaded_state.height != 0)
                 {
                     properties = loaded_state;

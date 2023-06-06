@@ -28,7 +28,7 @@ namespace Window.Helper
         }
     }
 
-    public class FPScounter
+    public class StatCounter
     {
         public int frameCount = 0;
         public double elapsedTime = 0.0, fps = 0.0, ms;

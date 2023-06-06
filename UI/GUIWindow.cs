@@ -13,11 +13,16 @@ namespace Window.Rendering
     {
         public bool collapsable;
         public bool moveable;
+        public bool resizeable_l, resizeable_t, resizeable_r, resizeable_b;
 
         public GUISettings()
         {
             collapsable = true;
             moveable = true;
+            resizeable_l = true;
+            resizeable_t = true;
+            resizeable_r = true;
+            resizeable_b = true;
         }
     }
 
@@ -38,8 +43,8 @@ namespace Window.Rendering
 
         private float edgeThreshold =   0.01f;
         private float min_windowSize =  0.05f;
-        private float topbar_thickness, topBar_reference =  20f;
-        private float border_y, border_x, border_reference = 3f;
+        private float topbar_thickness, topBar_reference =  20;
+        private float border_y, border_x, border_reference = 2;
         
         private float collapse_size;
         private float bottom;
@@ -167,16 +172,16 @@ namespace Window.Rendering
                 IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
             }
 
-            Window.GUIWindow_S.SetFloat("index", z_index);            
+            Window.WindowShader.SetFloat("index", z_index);            
             if (settings.collapsable)
             {
-                Window.GUIWindow_S.SetInt("interaction", 1);
-                Window.GUIWindow_S.SetVector3("tint", hover_tint);
+                Window.WindowShader.SetInt("interaction", 1);
+                Window.WindowShader.SetVector3("tint", hover_tint);
                 GL.BindVertexArray(interactionVAO);
                 GL.DrawElements(PrimitiveType.Triangles, interaction_indices.Length, DrawElementsType.UnsignedInt, 0);
             }
 
-            Window.GUIWindow_S.SetInt("interaction", 0);
+            Window.WindowShader.SetInt("interaction", 0);
             GL.BindVertexArray(mainVAO);
             GL.DrawElements(PrimitiveType.Triangles, main_indices.Length, DrawElementsType.UnsignedInt, 0);
         }
@@ -200,7 +205,7 @@ namespace Window.Rendering
                 if (IsHoveringTitleBar | IsMoving | (windowHovered && altDown))
                 {
                     cursor = MouseCursor.Default;
-                    if (leftDown)
+                    if (leftDown && settings.moveable)
                     {
                         if (!IsMoving)
                         {
@@ -269,7 +274,7 @@ namespace Window.Rendering
                 else if (IsHoveringAnyEdge)
                 {
                     // Check TopEdge for hover
-                    if ((EdgesHover[3] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2] && !IsCollapsed)
+                    if ((EdgesHover[3] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2] && !IsCollapsed && settings.resizeable_t)
                     {
                         cursor = MouseCursor.VResize;
                         if (leftDown && Window.mouse_pos.Y > border_reference)
@@ -293,7 +298,7 @@ namespace Window.Rendering
                     }
 
                     // Check RightEdge for hover
-                    else if ((EdgesHover[1] | IsResizing) && !EdgesHover[0] && !EdgesHover[2] && !EdgesHover[3])
+                    else if ((EdgesHover[1] | IsResizing) && !EdgesHover[0] && !EdgesHover[2] && !EdgesHover[3]  && settings.resizeable_r)
                     {
                         cursor = MouseCursor.HResize;
                         if (leftDown && Window.mouse_pos.X < Window.size.X - border_reference)
@@ -316,7 +321,7 @@ namespace Window.Rendering
                     }
 
                     // Check BottomEdge for hover
-                    else if ((EdgesHover[2] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[3] && !IsCollapsed)
+                    else if ((EdgesHover[2] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[3] && !IsCollapsed  && settings.resizeable_b)
                     {
                         cursor = MouseCursor.VResize;
                         if (leftDown && Window.mouse_pos.Y < Window.size.Y - border_reference)
@@ -336,7 +341,7 @@ namespace Window.Rendering
                     }
 
                     // Check LeftEdge for hover
-                    else if ((EdgesHover[0] | IsResizing) && !EdgesHover[1] && !EdgesHover[2] && !EdgesHover[3])
+                    else if ((EdgesHover[0] | IsResizing) && !EdgesHover[1] && !EdgesHover[2] && !EdgesHover[3] && settings.resizeable_l)
                     {
                         cursor = MouseCursor.HResize;
                         if (leftDown && Window.mouse_pos.X > border_reference)

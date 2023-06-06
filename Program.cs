@@ -1,5 +1,4 @@
-﻿using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
+﻿using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
 namespace Window
@@ -20,7 +19,7 @@ namespace Window
                 Flags = ContextFlags.Debug
             };
 
-            using Window window = new Window(window_settings);
+            Window window = new Window(window_settings);
             window.Run();
         }
     }
