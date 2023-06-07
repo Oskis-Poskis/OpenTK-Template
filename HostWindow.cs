@@ -22,12 +22,10 @@ namespace Window
             size = new(state.properties.width, state.properties.height);
             Title = state.properties.title;
             WindowShader = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
+            TextShader = new Shader(base_path + "Shaders/text.vert", base_path + "Shaders/text.frag");
 
             GUIWindow window1 = new GUIWindow($"Window {1}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
-            GUIWindow window2 = new GUIWindow($"Window {2}", new(size.X / 4, size.Y / 2), new(0));
-            window2.settings.moveable = false;
-            window2.settings.resizeable_l = false;
-            window2.settings.resizeable_t = false;
+            GUIWindow window2 = new GUIWindow($"Window {2}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
             GUIWindow window3 = new GUIWindow($"Window {3}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
             GUIWindow window4 = new GUIWindow($"Window {4}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
 
@@ -43,10 +41,12 @@ namespace Window
         public static Vector2i size;
 
         public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
-        public static Shader WindowShader;
+        public static Shader WindowShader, TextShader;
         public static List<GUIWindow> windows;
         int activeIndex = 0;
         WindowSaveState state = new WindowSaveState(new WindowProperties());
+
+        Text text;
 
         private static void OnDebugMessage(
             DebugSource source,
@@ -74,7 +74,8 @@ namespace Window
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            VSync = VSyncMode.On;
+            VSync = VSyncMode.Off;
+            text = new Text("testttt", new(-1, 1), 30);
             
             IsVisible = true;
         }
@@ -138,7 +139,12 @@ namespace Window
             if (WindowShader != null && windows != null)
             {
                 Render();
-                foreach(GUIWindow window in windows) window.UpdateVertices();
+                foreach(GUIWindow window in windows)
+                {
+                    window.UpdateVertices();
+                }
+
+                if (text != null) text.UpdateVertices(new(-1, 1), 30);
             }
         }
 
@@ -162,6 +168,7 @@ namespace Window
                 }
                 windows[i].Render(MouseState, i == activeIndex);
             }
+            text.Render();
 
             SwapBuffers();
         }

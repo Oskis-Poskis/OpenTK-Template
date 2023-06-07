@@ -14,7 +14,7 @@ namespace Window.Common
         // Shaders are written in GLSL, which is a language very similar to C in its semantics.
         // The GLSL source is compiled *at runtime*, so it can optimize itself for the graphics card it's currently being used on.
         // A commented example of GLSL can be found in shader.vert.
-        public Shader(string vertPath, string fragPath, string geometryPath)
+        public Shader(string vertPath, string fragPath, string geometryPath = "none")
         {
             // There are several different types of shaders, but the only two you need for basic rendering are the vertex and fragment shaders.
             // The vertex shader is responsible for moving around vertices, and uploading that data to the fragment shader.
@@ -40,10 +40,14 @@ namespace Window.Common
             GL.ShaderSource(fragmentShader, shaderSource);
             CompileShader(fragmentShader);
 
-            shaderSource = File.ReadAllText(geometryPath);
-            var geometryShader = GL.CreateShader(ShaderType.GeometryShader);
-            GL.ShaderSource(geometryShader, shaderSource);
-            CompileShader(geometryShader);
+            int geometryShader = 0;
+            if (geometryPath != "none")
+            {
+                shaderSource = File.ReadAllText(geometryPath);
+                geometryShader = GL.CreateShader(ShaderType.GeometryShader);
+                GL.ShaderSource(geometryShader, shaderSource);
+                CompileShader(geometryShader);
+            }
 
             // These two shaders must then be merged into a shader program, which can then be used by OpenGL.
             // To do this, create a program...
@@ -52,7 +56,7 @@ namespace Window.Common
             // Attach both shaders...
             GL.AttachShader(Handle, vertexShader);
             GL.AttachShader(Handle, fragmentShader);
-            GL.AttachShader(Handle, geometryShader);
+            if (geometryPath != "none") GL.AttachShader(Handle, geometryShader);
 
             // And then link them together.
             LinkProgram(Handle);
@@ -61,10 +65,10 @@ namespace Window.Common
             // Detach them, and then delete them.
             GL.DetachShader(Handle, vertexShader);
             GL.DetachShader(Handle, fragmentShader);
-            GL.DetachShader(Handle, geometryShader);
+            if (geometryPath != "none") GL.DetachShader(Handle, geometryShader);
             GL.DeleteShader(fragmentShader);
             GL.DeleteShader(vertexShader);
-            GL.DeleteShader(geometryShader);
+            if (geometryPath != "none") GL.DeleteShader(geometryShader);
 
             // The shader is now ready to go, but first, we're going to cache all the shader uniform locations.
             // Querying this from the shader is very slow, so we do it once on initialization and reuse those values

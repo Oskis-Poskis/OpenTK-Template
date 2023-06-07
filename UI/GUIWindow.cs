@@ -2,9 +2,6 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common.Input;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
-
 using Window.Helper;
 
 namespace Window.Rendering
