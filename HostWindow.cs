@@ -29,11 +29,7 @@ namespace Window
             GUIWindow window3 = new GUIWindow($"Window {3}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
             GUIWindow window4 = new GUIWindow($"Window {4}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
 
-            windows = new List<GUIWindow>();
-            windows.Add(window1);
-            windows.Add(window2);
-            windows.Add(window3);
-            windows.Add(window4);
+            windows = new List<GUIWindow> { window1, window2, window3, window4 };
         }
 
         StatCounter stats = new();
@@ -73,6 +69,8 @@ namespace Window
             MakeCurrent();
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
             VSync = VSyncMode.Off;
             text = new Text("testttt", new(-1, 1), 30);
@@ -168,7 +166,7 @@ namespace Window
                 }
                 windows[i].Render(MouseState, i == activeIndex);
             }
-            text.Render();
+            text.Render(-1, 1, 0.3f);
 
             SwapBuffers();
         }

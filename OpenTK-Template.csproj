@@ -10,13 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FreeTypeSharp" Version="1.1.3" />
     <PackageReference Include="OpenTK" Version="4.7.7" />
     <PackageReference Include="SharpFont" Version="4.0.1" />
     <PackageReference Include="SharpFont.Dependencies" Version="2.6.0" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
     <Content Include="Shaders\*.*">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+	</Content>
+	<Content Include="Assets\**\*.*">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
 
 </Project>
