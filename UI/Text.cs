@@ -15,13 +15,15 @@ namespace Window.Rendering
 {
     struct Character
     {
+        public char Char;
         public int TextureID;  // ID handle of the glyph texture
         public Vector2 Size;       // Size of glyph
         public Vector2 Bearing;    // Offset from baseline to left/top of glyph
         public int Advance;    // Offset to advance to next glyph
 
-        public Character(int textureid, Vector2 size, Vector2 bearing, int advance)
+        public Character(char char_, int textureid, Vector2 size, Vector2 bearing, int advance)
         {
+            Char = char_;
             int TextureID = textureid;
             Vector2 Size = size;
             Vector2 Bearing = bearing;
@@ -31,34 +33,29 @@ namespace Window.Rendering
 
     public class Text
     {
-        string text;
-        private int vaoHandle, vboHandle, eboHandle;
-        public Vector2 startposition;
-        
-        public float width, height;
-        int character_count;
-
+        private int vaoHandle, vboHandle;
         List<Character> characters = new List<Character>();
 
-        unsafe public Text(string Text, Vector2 StartPosition, float height)
+        unsafe public Text()
         {
-            IntPtr library, face;
+            IntPtr library, face = new IntPtr();
             FT_Error error;
             FT_FaceRec* face_ptr;
 
             error = FT_Init_FreeType(out library);
-            if (error != FT_Error.FT_Err_Ok) Console.WriteLine(error);
+            Console.WriteLine(error);
 
-            error = FT_New_Face(library, $"{Window.base_path}Assets/Fonts/Segoe UI.ttf", 0, out face);
+            error = FT_New_Face(library, $"{Window.base_path}Assets/Fonts/font.ttf", 0, out face);
             face_ptr = (FT_FaceRec*)face;
-            if (error != FT_Error.FT_Err_Ok) Console.WriteLine(error + "\n" + $"{Window.base_path}Assets/Fonts/Segoe UI.ttf");
+            Console.WriteLine(error + "\n" + $"{Window.base_path}Assets/Fonts/font.ttf");
 
-            FT_Set_Pixel_Sizes(face, 0, 48);
+            error = FT_Set_Pixel_Sizes(face, 0, 48);
+            Console.WriteLine(error);
 
             GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
             for (uint c = 0; c < 128; c++)
             {
-                error = FT_Load_Char(face, c, FT_LOAD_RENDER);
+                error = FT_Load_Char(face, (char)c, FT_LOAD_RENDER);
                 if (error != FT_Error.FT_Err_Ok) Console.WriteLine(error);
 
                 int texture = GL.GenTexture();
@@ -66,25 +63,27 @@ namespace Window.Rendering
                 GL.TexImage2D(
                     TextureTarget.Texture2D,
                     0,
-                    (PixelInternalFormat)All.Red,
+                    PixelInternalFormat.R8,
                     (int)face_ptr->glyph->bitmap.width,
                     (int)face_ptr->glyph->bitmap.rows,
                     0,
                     PixelFormat.Red,
-                    PixelType.UnsignedByte,
-                    face_ptr->glyph->bitmap.buffer
-                    );
+                    PixelType.Byte,
+                    face_ptr->glyph->bitmap.buffer);
 
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, texture);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, texture);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, texture);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, texture);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
 
                 Character character = new Character(
+                    (char)c,
                     texture,
                     new(face_ptr->glyph->bitmap.width, face_ptr->glyph->bitmap.rows),
                     new(face_ptr->glyph->bitmap_left, face_ptr->glyph->bitmap_top),
                     (int)face_ptr->glyph->advance.x);
+                
+                Console.WriteLine($"Char: {character.Char} | TextureID: {character.TextureID} | BitmapSize: {character.Size} | Left&Top {character.Bearing} | Advance {character.Advance}");
 
                 characters.Insert((int)c, character);
             }
@@ -92,34 +91,47 @@ namespace Window.Rendering
             FT_Done_Face(face);
             FT_Done_FreeType(library);
 
-
-            text = Text;
-            startposition = StartPosition;
-            character_count = Text.Length;
-
-            width = HelperClass.MapRange(height, 0, Window.size.X, 0, 2);
-            height = HelperClass.MapRange(height, 0, Window.size.Y, 0, 2);
+            float xpos = 0;
+            float ypos = 0;
+            float h = 0.1f;
+            float w = 0.1f;
+            float[] vertices = new float[]
+            {
+                xpos,     ypos + h,   0.0f, 0.0f,
+                xpos,     ypos,       0.0f, 1.0f,
+                xpos + w, ypos,       1.0f, 1.0f,
+                xpos,     ypos + h,   0.0f, 0.0f,
+                xpos + w, ypos,       1.0f, 1.0f,
+                xpos + w, ypos + h,   1.0f, 0.0f
+            };
 
             vaoHandle = GL.GenVertexArray();
             GL.BindVertexArray(vaoHandle);
 
             vboHandle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
-            GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * 6 * 4, 0, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
 
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 4, VertexAttribPointerType.Float, false, 4 * sizeof(float), 0);
         }
 
-        public void Render(float x, float y, float scale)
+        public void Render(string text, float x, float y, float scale)
         {
             Window.TextShader.Use();
-
-            Window.TextShader.SetVector3("textColor", new Vector3(1.0f));
+            Window.TextShader.SetVector3("textColor", new Vector3(1, 0, 0));
+            Window.TextShader.SetMatrix4("projection", Matrix4.CreateOrthographicOffCenter(0, Window.size.X, 0, Window.size.Y, -1, 1));
+            
             GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindVertexArray(vaoHandle);
+            Window.TextShader.SetInt("text", 0);
+            GL.BindTexture(TextureTarget.Texture2D, characters[0x41].TextureID);
+            Console.WriteLine($"Index: {0x41} | {(char)0x41}");
 
-            for (int c = 0; c < text.Count(); c++)
+            GL.BindVertexArray(vaoHandle);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+
+            /*
+            for (int c = 0; c < text.Length; c++)
             {
                 Character ch = characters[c];
 
@@ -127,32 +139,31 @@ namespace Window.Rendering
                 float ypos = y - (ch.Size.Y - ch.Bearing.Y) * scale;
 
                 float w = ch.Size.X * scale;
-                float h = ch.Size.X * scale;
-                // update VBO for each character
-                float[][] vertices = new float[6][]
+                float h = ch.Size.Y * scale;
+                
+                float[] vertices = new float[]
                 {
-                    new float[] { xpos,     ypos + h,   0.0f, 0.0f },
-                    new float[] { xpos,     ypos,       0.0f, 1.0f },
-                    new float[] { xpos + w, ypos,       1.0f, 1.0f },
-                    new float[] { xpos,     ypos + h,   0.0f, 0.0f },
-                    new float[] { xpos + w, ypos,       1.0f, 1.0f },
-                    new float[] { xpos + w, ypos + h,   1.0f, 0.0f }
+                    xpos,     ypos + h,   0.0f, 0.0f,
+                    xpos,     ypos,       0.0f, 1.0f,
+                    xpos + w, ypos,       1.0f, 1.0f,
+                    xpos,     ypos + h,   0.0f, 0.0f,
+                    xpos + w, ypos,       1.0f, 1.0f,
+                    xpos + w, ypos + h,   1.0f, 0.0f
                 };
 
                 GL.BindTexture(TextureTarget.Texture2D, ch.TextureID);
                 GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
-                GL.BufferSubData(BufferTarget.ArrayBuffer, 0, vertices.Length, vertices[0]);
+                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, vertices.Length * sizeof(float), vertices);
 
                 GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
                 x += (ch.Advance >> 6) * scale;
             }
+            */
         }
 
         public void UpdateVertices(Vector2 StartPosition, float pixelheight)
         {
-            startposition = StartPosition;
-            width = HelperClass.MapRange(pixelheight, 0, Window.size.X, 0, 2);
-            height = HelperClass.MapRange(pixelheight, 0, Window.size.Y, 0, 2);
+            
         }
     }
 }

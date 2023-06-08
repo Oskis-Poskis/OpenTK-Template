@@ -30,6 +30,8 @@ namespace Window
             GUIWindow window4 = new GUIWindow($"Window {4}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
 
             windows = new List<GUIWindow> { window1, window2, window3, window4 };
+
+            text = new Text();
         }
 
         StatCounter stats = new();
@@ -73,7 +75,6 @@ namespace Window
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
             VSync = VSyncMode.Off;
-            text = new Text("testttt", new(-1, 1), 30);
             
             IsVisible = true;
         }
@@ -164,9 +165,10 @@ namespace Window
                     WindowShader.SetVector3("shade", new(0.5f));
                     windows[i].z_index = 0;
                 }
-                windows[i].Render(MouseState, i == activeIndex);
+                // windows[i].Render(MouseState, i == activeIndex);
             }
-            text.Render(-1, 1, 0.3f);
+
+            text.Render("Best text ever", 0, 0, 0.5f);
 
             SwapBuffers();
         }
