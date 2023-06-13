@@ -3,10 +3,6 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common.Input;
 
-using FreeTypeSharp;
-using FreeTypeSharp.Native;
-using static FreeTypeSharp.Native.FT;
-
 using Window.Helper;
 using System.Drawing;
 using static System.Formats.Asn1.AsnWriter;
@@ -38,58 +34,29 @@ namespace Window.Rendering
 
         unsafe public Text()
         {
-            IntPtr library, face = new IntPtr();
-            FT_Error error;
-            FT_FaceRec* face_ptr;
-
-            error = FT_Init_FreeType(out library);
-            Console.WriteLine(error);
-
-            error = FT_New_Face(library, $"{Window.base_path}Assets/Fonts/font.ttf", 0, out face);
-            face_ptr = (FT_FaceRec*)face;
-            Console.WriteLine(error + "\n" + $"{Window.base_path}Assets/Fonts/font.ttf");
-
-            error = FT_Set_Pixel_Sizes(face, 0, 48);
-            Console.WriteLine(error);
-
             GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
             for (uint c = 0; c < 128; c++)
             {
-                error = FT_Load_Char(face, (char)c, FT_LOAD_RENDER);
-                if (error != FT_Error.FT_Err_Ok) Console.WriteLine(error);
+                // error = FT_Load_Char(face, (char)c, FT_LOAD_RENDER);
+                // if (error != FT_Error.FT_Err_Ok) Console.WriteLine(error);
 
                 int texture = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture2D, texture);
-                GL.TexImage2D(
-                    TextureTarget.Texture2D,
-                    0,
-                    PixelInternalFormat.R8,
-                    (int)face_ptr->glyph->bitmap.width,
-                    (int)face_ptr->glyph->bitmap.rows,
-                    0,
-                    PixelFormat.Red,
-                    PixelType.Byte,
-                    face_ptr->glyph->bitmap.buffer);
-
+                //GL.TexImage2D()
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
 
-                Character character = new Character(
-                    (char)c,
-                    texture,
-                    new(face_ptr->glyph->bitmap.width, face_ptr->glyph->bitmap.rows),
-                    new(face_ptr->glyph->bitmap_left, face_ptr->glyph->bitmap_top),
-                    (int)face_ptr->glyph->advance.x);
+                Character character = new Character();
                 
                 Console.WriteLine($"Char: {character.Char} | TextureID: {character.TextureID} | BitmapSize: {character.Size} | Left&Top {character.Bearing} | Advance {character.Advance}");
 
                 characters.Insert((int)c, character);
             }
 
-            FT_Done_Face(face);
-            FT_Done_FreeType(library);
+            //FT_Done_Face(face);
+            //FT_Done_FreeType(library);
 
             float xpos = 0;
             float ypos = 0;

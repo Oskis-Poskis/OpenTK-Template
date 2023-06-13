@@ -8,12 +8,14 @@ namespace Window.Rendering
 {
     public struct GUISettings
     {
+        public bool fullscreen;
         public bool collapsable;
         public bool moveable;
         public bool resizeable_l, resizeable_t, resizeable_r, resizeable_b;
 
         public GUISettings()
         {
+            fullscreen = false;
             collapsable = true;
             moveable = true;
             resizeable_l = true;
@@ -165,12 +167,12 @@ namespace Window.Rendering
                 EdgesHover[2] = (ypos >= BottomEdge - edgeThreshold && ypos <= BottomEdge + edgeThreshold) && (xpos > LeftEdge) && (xpos < RightEdge);
                 EdgesHover[3] = (ypos >= TopEdge + topbar_thickness - edgeThreshold && ypos <= TopEdge + edgeThreshold + topbar_thickness) && (xpos > LeftEdge) && (xpos < RightEdge);
                 
-                IsHoveringTitleBar = (xpos >= LeftEdge + edgeThreshold && xpos <= RightEdge - edgeThreshold) && (ypos >= TopEdge && ypos <= TopEdge - edgeThreshold + topbar_thickness);
+                IsHoveringTitleBar = (xpos >= LeftEdge + edgeThreshold && xpos <= RightEdge - edgeThreshold) && (ypos >= TopEdge - border_y && ypos <= TopEdge - edgeThreshold + topbar_thickness);
                 IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
             }
 
-            Window.WindowShader.SetFloat("index", z_index);            
-            if (settings.collapsable)
+            Window.WindowShader.SetFloat("index", settings.fullscreen ? 0 : z_index);
+            if (settings.collapsable && !settings.fullscreen)
             {
                 Window.WindowShader.SetInt("interaction", 1);
                 Window.WindowShader.SetVector3("tint", hover_tint);
@@ -199,7 +201,7 @@ namespace Window.Rendering
             if (windowHovered | IsResizing | IsMoving)
             {
                 // Move Window
-                if (IsHoveringTitleBar | IsMoving | (windowHovered && altDown))
+                if (IsHoveringTitleBar | IsMoving | (windowHovered && altDown) && !settings.fullscreen)
                 {
                     cursor = MouseCursor.Default;
                     if (leftDown && settings.moveable)
@@ -238,7 +240,7 @@ namespace Window.Rendering
                     
                     else IsMoving = false;
 
-                    if (IsHoveringTitleBar && settings.collapsable)
+                    if (IsHoveringTitleBar && settings.collapsable && !settings.fullscreen)
                     {
                         if (IsRectangleHovered(
                             new(RightEdge - collapse_size - border_x, TopEdge + topbar_thickness - border_y),
@@ -268,7 +270,7 @@ namespace Window.Rendering
                     cursor = MouseCursor.Default;
                 }
 
-                else if (IsHoveringAnyEdge)
+                else if (IsHoveringAnyEdge && !settings.fullscreen)
                 {
                     // Check TopEdge for hover
                     if ((EdgesHover[3] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2] && !IsCollapsed && settings.resizeable_t)
@@ -373,6 +375,14 @@ namespace Window.Rendering
             topbar_thickness = HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2);
 
             bottom = IsCollapsed ? TopEdge - border_y * 2 : BottomEdge;
+
+            if (settings.fullscreen)
+            {
+                LeftEdge = -1;
+                RightEdge = 1;
+                TopEdge = 1 - topbar_thickness;
+                BottomEdge = -1;
+            }
 
             main_vertices = new float[]
             {

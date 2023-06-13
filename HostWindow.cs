@@ -24,14 +24,11 @@ namespace Window
             WindowShader = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
             TextShader = new Shader(base_path + "Shaders/text.vert", base_path + "Shaders/text.frag");
 
-            GUIWindow window1 = new GUIWindow($"Window {1}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
-            GUIWindow window2 = new GUIWindow($"Window {2}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
-            GUIWindow window3 = new GUIWindow($"Window {3}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
-            GUIWindow window4 = new GUIWindow($"Window {4}", new(size.X / 2, size.Y / 2), new(size.X / 4, size.Y / 4));
-
-            windows = new List<GUIWindow> { window1, window2, window3, window4 };
-
-            text = new Text();
+            GUIWindow window1 = new GUIWindow($"Window {1}", new(size.X / 2 - 100, (int)(size.Y * 0.65f)), new(0));
+            window1.settings.fullscreen = true;
+            GUIWindow window2 = new GUIWindow($"Window {2}", new(size.X / 2 - 100, (int)(size.Y * 0.65f)), new(size.X / 2, 0));
+            
+            windows = new List<GUIWindow> { window2, window1  };
         }
 
         StatCounter stats = new();
@@ -43,8 +40,6 @@ namespace Window
         public static List<GUIWindow> windows;
         int activeIndex = 0;
         WindowSaveState state = new WindowSaveState(new WindowProperties());
-
-        Text text;
 
         private static void OnDebugMessage(
             DebugSource source,
@@ -74,7 +69,7 @@ namespace Window
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            VSync = VSyncMode.Off;
+            VSync = VSyncMode.On;
             
             IsVisible = true;
         }
@@ -104,7 +99,7 @@ namespace Window
                     windows[i].IsWindowHovered() &&
                     !windows[activeIndex].IsResizing &&
                     !windows[activeIndex].IsMoving &&
-                    !windows[activeIndex].IsWindowHovered())
+                    (!windows[activeIndex].IsWindowHovered() | windows[activeIndex].settings.fullscreen))
                 {
                     activeIndex = i;
                     Console.WriteLine("Selected: " + windows[i].Title);
@@ -142,8 +137,6 @@ namespace Window
                 {
                     window.UpdateVertices();
                 }
-
-                if (text != null) text.UpdateVertices(new(-1, 1), 30);
             }
         }
 
@@ -165,10 +158,8 @@ namespace Window
                     WindowShader.SetVector3("shade", new(0.5f));
                     windows[i].z_index = 0;
                 }
-                // windows[i].Render(MouseState, i == activeIndex);
+                windows[i].Render(MouseState, i == activeIndex);
             }
-
-            text.Render("Best text ever", 0, 0, 0.5f);
 
             SwapBuffers();
         }
