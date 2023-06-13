@@ -15,7 +15,7 @@ namespace WindowTemplate
 
         public WindowProperties()
         {
-            this.title = "Template";
+            this.title = "OpenTK - Template";
             this.width = 1200;
             this.height = 800;
             this.positionx = 0;
