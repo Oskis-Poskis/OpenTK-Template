@@ -9,6 +9,7 @@ namespace TestingProject
         {
             NativeWindowSettings window_settings = new()
             {
+                Vsync = VSyncMode.On,
                 StartVisible = false,
                 StartFocused = true,
                 API = ContextAPI.OpenGL,

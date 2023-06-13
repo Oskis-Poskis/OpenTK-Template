@@ -6,14 +6,14 @@ using WindowTemplate.Helper;
 
 namespace WindowTemplate.Rendering
 {
-    public struct GUISettings
+    public struct UISettings
     {
         public bool fullscreen;
         public bool collapsable;
         public bool moveable;
         public bool resizeable_l, resizeable_t, resizeable_r, resizeable_b;
 
-        public GUISettings()
+        public UISettings()
         {
             fullscreen = false;
             collapsable = true;
@@ -25,13 +25,14 @@ namespace WindowTemplate.Rendering
         }
     }
 
-    public class GUIWindow
+    
+    public class UIWindow
     {
         public string Title;
         public int z_index;
         float xpos, ypos;
         public MouseCursor cursor = MouseCursor.Default;
-        public GUISettings settings = new GUISettings();
+        public UISettings settings = new UISettings();
 
         private float TopEdge =     0.5f;
         private float BottomEdge = -0.5f;
@@ -99,7 +100,7 @@ namespace WindowTemplate.Rendering
         /// <param name="title">An awesome window title</param>
         /// <param name="size">Window size in pixels, including titlebar</param>
         /// <param name="position">Position of the top left corner relative to the host windows top left corner, in pixels</param>
-        public GUIWindow(string title, Vector2i size, Vector2 position)
+        public UIWindow(string title, Vector2i size, Vector2 position)
         {
             Title = title;
             float x = HelperClass.MapRange(size.X, 0, HostWindow.size.X, 0, 2);

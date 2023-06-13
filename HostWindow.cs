@@ -61,7 +61,6 @@ namespace WindowTemplate
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DepthTest);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
-            VSync = VSyncMode.On;
             
             IsVisible = true;
         }
@@ -100,7 +99,7 @@ namespace WindowTemplate
             // Console.WriteLine($"Resized host window to: {size.X}x{size.Y}");
         }
 
-        public void UpdateUI(List<GUIWindow> UIWindows)
+        public void UpdateUI(List<UIWindow> UIWindows)
         {
             bool leftDown = IsMouseButtonDown(MouseButton.Button1);
             bool leftPress = IsMouseButtonPressed(MouseButton.Button1);
@@ -127,11 +126,11 @@ namespace WindowTemplate
             }
         }
 
-        public void ResizeUI(List<GUIWindow> UIWindows)
+        public void ResizeUI(List<UIWindow> UIWindows)
         {
             if (WindowShader != null && UIWindows != null)
             {
-                foreach(GUIWindow window in UIWindows)
+                foreach(UIWindow window in UIWindows)
                 {
                     window.UpdateVertices();
                 }
@@ -139,7 +138,7 @@ namespace WindowTemplate
             }
         }
 
-        public void RenderUI(List<GUIWindow> UIWindows)
+        public void RenderUI(List<UIWindow> UIWindows)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.ClearColor(0.75f, 0.75f, 0.75f, 1);
