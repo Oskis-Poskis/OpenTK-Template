@@ -9,7 +9,7 @@
 2. Clone the repo into "Example Name"
 3. Create a folder named "Your Project" inside "Example Name"
 4. Create a .NET Console App inside "Your Project"
-5. Reference the template in the new .csrpoj using:
+5. Reference the template in the new .csproj using:
 ```xaml
 <ItemGroup>
     <ProjectReference Include="..\OpenTK-Template\OpenTK-Template.csproj" />
