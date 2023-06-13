@@ -17,4 +17,4 @@
 ```
 
 ### Example:
-!(Assets/proj.png+)
+!(Assets/proj.png)
