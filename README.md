@@ -15,3 +15,6 @@
     <ProjectReference Include="..\OpenTK-Template\OpenTK-Template.csproj" />
 </ItemGroup>
 ```
+
+### Example:
+!(Assets/proj.png+)
