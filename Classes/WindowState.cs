@@ -1,7 +1,7 @@
 using System.Text.Json;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace Window
+namespace WindowTemplate
 {
     [Serializable]
     public struct WindowProperties
@@ -33,18 +33,18 @@ namespace Window
         }
 
         JsonSerializerOptions settings = new JsonSerializerOptions{ WriteIndented = true };
-        string save_path = Window.base_path + "Save/windowstate.txt";
+        string save_path = HostWindow.base_path + "Save/windowstate.txt";
 
         unsafe public void SaveState(OpenTK.Windowing.GraphicsLibraryFramework.Window* WindowPtr)
         {
-            if (Path.Exists(Window.base_path + "Save/windowstate.txt"))
+            if (Path.Exists(HostWindow.base_path + "Save/windowstate.txt"))
             {
                 Save();
             }
 
             else
             {
-                Directory.CreateDirectory(Window.base_path + "Save");
+                Directory.CreateDirectory(HostWindow.base_path + "Save");
                 Save();
             }
 

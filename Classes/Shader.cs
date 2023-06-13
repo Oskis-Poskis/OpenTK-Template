@@ -1,7 +1,7 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-namespace Window.Common
+namespace WindowTemplate.Common
 {
     // A simple class meant to help create shaders.
     public class Shader

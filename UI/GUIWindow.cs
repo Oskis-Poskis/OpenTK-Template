@@ -2,9 +2,9 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common.Input;
-using Window.Helper;
+using WindowTemplate.Helper;
 
-namespace Window.Rendering
+namespace WindowTemplate.Rendering
 {
     public struct GUISettings
     {
@@ -102,20 +102,20 @@ namespace Window.Rendering
         public GUIWindow(string title, Vector2i size, Vector2 position)
         {
             Title = title;
-            float x = HelperClass.MapRange(size.X, 0, Window.size.X, 0, 2);
-            float y = HelperClass.MapRange(size.Y, 0, Window.size.Y, 0, 2);
+            float x = HelperClass.MapRange(size.X, 0, HostWindow.size.X, 0, 2);
+            float y = HelperClass.MapRange(size.Y, 0, HostWindow.size.Y, 0, 2);
 
             TopEdge = y / 2;
             BottomEdge = -y / 2;
             RightEdge = x / 2;
             LeftEdge = -x / 2;
 
-            border_y = HelperClass.MapRange(border_reference, 0, Window.size.Y, 0, 2);
-            border_x = HelperClass.MapRange(border_reference, 0, Window.size.X, 0, 2);
-            topbar_thickness = HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2);
+            border_y = HelperClass.MapRange(border_reference, 0, HostWindow.size.Y, 0, 2);
+            border_x = HelperClass.MapRange(border_reference, 0, HostWindow.size.X, 0, 2);
+            topbar_thickness = HelperClass.MapRange(topBar_reference, 0, HostWindow.size.Y, 0, 2);
 
-            float xoff = HelperClass.MapRange(position.X, 0, Window.size.X, -1, 1) + x / 2;
-            float yoff = HelperClass.MapRange(position.Y, 0, Window.size.Y, -1, 1) + y / 2;
+            float xoff = HelperClass.MapRange(position.X, 0, HostWindow.size.X, -1, 1) + x / 2;
+            float yoff = HelperClass.MapRange(position.Y, 0, HostWindow.size.Y, -1, 1) + y / 2;
 
             LeftEdge += xoff;
             RightEdge += xoff;
@@ -157,8 +157,8 @@ namespace Window.Rendering
 
         public void Render(MouseState mouseState, bool isActive)
         {
-            xpos = HelperClass.MapRange(Window.mouse_pos.X, 0, Window.size.X, -1.0f, 1.0f);
-            ypos = HelperClass.MapRange(Window.mouse_pos.Y, 0, Window.size.Y, 1.0f, -1.0f);
+            xpos = HelperClass.MapRange(HostWindow.mouse_pos.X, 0, HostWindow.size.X, -1.0f, 1.0f);
+            ypos = HelperClass.MapRange(HostWindow.mouse_pos.Y, 0, HostWindow.size.Y, 1.0f, -1.0f);
 
             if (IsWindowHovered())
             {
@@ -171,16 +171,16 @@ namespace Window.Rendering
                 IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
             }
 
-            Window.WindowShader.SetFloat("index", settings.fullscreen ? 0 : z_index);
+            HostWindow.WindowShader.SetFloat("index", settings.fullscreen ? -1 : z_index);
             if (settings.collapsable && !settings.fullscreen)
             {
-                Window.WindowShader.SetInt("interaction", 1);
-                Window.WindowShader.SetVector3("tint", hover_tint);
+                HostWindow.WindowShader.SetInt("interaction", 1);
+                HostWindow.WindowShader.SetVector3("tint", hover_tint);
                 GL.BindVertexArray(interactionVAO);
                 GL.DrawElements(PrimitiveType.Triangles, interaction_indices.Length, DrawElementsType.UnsignedInt, 0);
             }
 
-            Window.WindowShader.SetInt("interaction", 0);
+            HostWindow.WindowShader.SetInt("interaction", 0);
             GL.BindVertexArray(mainVAO);
             GL.DrawElements(PrimitiveType.Triangles, main_indices.Length, DrawElementsType.UnsignedInt, 0);
         }
@@ -191,12 +191,12 @@ namespace Window.Rendering
         public void TransformWindow(bool leftDown, bool leftPress, bool leftReleased, bool altDown)
         {
             bool windowHovered = IsWindowHovered();
-            xpos = HelperClass.MapRange(Window.mouse_pos.X, 0, Window.size.X, -1.0f, 1.0f);
-            ypos = HelperClass.MapRange(Window.mouse_pos.Y, 0, Window.size.Y, 1.0f, -1.0f);
-            border_y = HelperClass.MapRange(border_reference, 0, Window.size.Y, 0, 2);
-            border_x = HelperClass.MapRange(border_reference, 0, Window.size.X, 0, 2);
+            xpos = HelperClass.MapRange(HostWindow.mouse_pos.X, 0, HostWindow.size.X, -1.0f, 1.0f);
+            ypos = HelperClass.MapRange(HostWindow.mouse_pos.Y, 0, HostWindow.size.Y, 1.0f, -1.0f);
+            border_y = HelperClass.MapRange(border_reference, 0, HostWindow.size.Y, 0, 2);
+            border_x = HelperClass.MapRange(border_reference, 0, HostWindow.size.X, 0, 2);
 
-            collapse_size = HelperClass.MapRange(topBar_reference, 0, Window.size.X, 0, 2);
+            collapse_size = HelperClass.MapRange(topBar_reference, 0, HostWindow.size.X, 0, 2);
 
             if (windowHovered | IsResizing | IsMoving)
             {
@@ -276,7 +276,7 @@ namespace Window.Rendering
                     if ((EdgesHover[3] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[2] && !IsCollapsed && settings.resizeable_t)
                     {
                         cursor = MouseCursor.VResize;
-                        if (leftDown && Window.mouse_pos.Y > border_reference)
+                        if (leftDown && HostWindow.mouse_pos.Y > border_reference)
                         {
                             if (ypos > BottomEdge + topbar_thickness + min_windowSize)
                             {
@@ -300,7 +300,7 @@ namespace Window.Rendering
                     else if ((EdgesHover[1] | IsResizing) && !EdgesHover[0] && !EdgesHover[2] && !EdgesHover[3]  && settings.resizeable_r)
                     {
                         cursor = MouseCursor.HResize;
-                        if (leftDown && Window.mouse_pos.X < Window.size.X - border_reference)
+                        if (leftDown && HostWindow.mouse_pos.X < HostWindow.size.X - border_reference)
                         {
                             if (xpos > LeftEdge + collapse_size + border_x * 2)
                             {
@@ -323,7 +323,7 @@ namespace Window.Rendering
                     else if ((EdgesHover[2] | IsResizing) && !EdgesHover[0] && !EdgesHover[1] && !EdgesHover[3] && !IsCollapsed  && settings.resizeable_b)
                     {
                         cursor = MouseCursor.VResize;
-                        if (leftDown && Window.mouse_pos.Y < Window.size.Y - border_reference)
+                        if (leftDown && HostWindow.mouse_pos.Y < HostWindow.size.Y - border_reference)
                         {
                             if (ypos < TopEdge - min_windowSize)
                             {
@@ -343,7 +343,7 @@ namespace Window.Rendering
                     else if ((EdgesHover[0] | IsResizing) && !EdgesHover[1] && !EdgesHover[2] && !EdgesHover[3] && settings.resizeable_l)
                     {
                         cursor = MouseCursor.HResize;
-                        if (leftDown && Window.mouse_pos.X > border_reference)
+                        if (leftDown && HostWindow.mouse_pos.X > border_reference)
                         {
                             if (xpos < RightEdge - collapse_size - border_x * 2)
                             {
@@ -370,9 +370,9 @@ namespace Window.Rendering
 
         public void UpdateVertices()
         {
-            border_y = HelperClass.MapRange(border_reference, 0, Window.size.Y, 0, 2);
-            border_x = HelperClass.MapRange(border_reference, 0, Window.size.X, 0, 2);
-            topbar_thickness = HelperClass.MapRange(topBar_reference, 0, Window.size.Y, 0, 2);
+            border_y = HelperClass.MapRange(border_reference, 0, HostWindow.size.Y, 0, 2);
+            border_x = HelperClass.MapRange(border_reference, 0, HostWindow.size.X, 0, 2);
+            topbar_thickness = HelperClass.MapRange(topBar_reference, 0, HostWindow.size.Y, 0, 2);
 
             bottom = IsCollapsed ? TopEdge - border_y * 2 : BottomEdge;
 
@@ -418,7 +418,7 @@ namespace Window.Rendering
 
         public void UpdateSecondaryVertices()
         {
-            collapse_size = HelperClass.MapRange(topBar_reference, 0, Window.size.X, 0, 2);
+            collapse_size = HelperClass.MapRange(topBar_reference, 0, HostWindow.size.X, 0, 2);
 
             interaction_vertices = new float[]
             {

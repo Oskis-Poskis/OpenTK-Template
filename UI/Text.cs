@@ -3,11 +3,11 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common.Input;
 
-using Window.Helper;
+using WindowTemplate.Helper;
 using System.Drawing;
 using static System.Formats.Asn1.AsnWriter;
 
-namespace Window.Rendering
+namespace WindowTemplate.Rendering
 {
     struct Character
     {
@@ -85,12 +85,12 @@ namespace Window.Rendering
 
         public void Render(string text, float x, float y, float scale)
         {
-            Window.TextShader.Use();
-            Window.TextShader.SetVector3("textColor", new Vector3(1, 0, 0));
-            Window.TextShader.SetMatrix4("projection", Matrix4.CreateOrthographicOffCenter(0, Window.size.X, 0, Window.size.Y, -1, 1));
+            HostWindow.TextShader.Use();
+            HostWindow.TextShader.SetVector3("textColor", new Vector3(1, 0, 0));
+            HostWindow.TextShader.SetMatrix4("projection", Matrix4.CreateOrthographicOffCenter(0, HostWindow.size.X, 0, HostWindow.size.Y, -1, 1));
             
             GL.ActiveTexture(TextureUnit.Texture0);
-            Window.TextShader.SetInt("text", 0);
+            HostWindow.TextShader.SetInt("text", 0);
             GL.BindTexture(TextureTarget.Texture2D, characters[0x41].TextureID);
             Console.WriteLine($"Index: {0x41} | {(char)0x41}");
 

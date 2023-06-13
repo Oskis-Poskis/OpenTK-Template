@@ -4,17 +4,17 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using Window.Common;
-using Window.Rendering;
-using Window.Helper;
+using WindowTemplate.Common;
+using WindowTemplate.Rendering;
+using WindowTemplate.Helper;
 
 using System.Runtime.InteropServices;
 
-namespace Window
+namespace WindowTemplate
 {
-    class Window : GameWindow
+    public class HostWindow : GameWindow
     {
-        unsafe public Window(NativeWindowSettings settings) : base(GameWindowSettings.Default, settings)
+        unsafe public HostWindow(NativeWindowSettings settings) : base(GameWindowSettings.Default, settings)
         {
             CenterWindow();
             
@@ -27,8 +27,8 @@ namespace Window
             GUIWindow window1 = new GUIWindow($"Window {1}", new(size.X / 2 - 100, (int)(size.Y * 0.65f)), new(0));
             window1.settings.fullscreen = true;
             GUIWindow window2 = new GUIWindow($"Window {2}", new(size.X / 2 - 100, (int)(size.Y * 0.65f)), new(size.X / 2, 0));
-            
-            windows = new List<GUIWindow> { window2, window1  };
+
+            windows = new List<GUIWindow> { window1, window2  };
         }
 
         StatCounter stats = new();
@@ -66,8 +66,6 @@ namespace Window
             MakeCurrent();
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.DebugMessageCallback(DebugMessageDelegate, IntPtr.Zero);
             VSync = VSyncMode.On;
             

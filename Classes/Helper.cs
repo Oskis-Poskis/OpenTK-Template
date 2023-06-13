@@ -2,7 +2,7 @@
 
 using OpenTK.Windowing.Common;
 
-namespace Window.Helper
+namespace WindowTemplate.Helper
 {
     public class HelperClass
     {
