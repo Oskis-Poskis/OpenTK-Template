@@ -24,7 +24,7 @@ namespace WindowTemplate
             WindowShader = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
             TextShader = new Shader(base_path + "Shaders/text.vert", base_path + "Shaders/text.frag");
 
-            GUIWindow window1 = new GUIWindow($"Winow {1}", new(HostWindow.size.X / 2 - 100, (int)(HostWindow.size.Y * 0.65f)), new(0));
+            GUIWindow window1 = new GUIWindow($"Window {1}", new(HostWindow.size.X / 2 - 100, (int)(HostWindow.size.Y * 0.65f)), new(0));
             GUIWindow window2 = new GUIWindow($"Window {2}", new(HostWindow.size.X / 2 - 100, (int)(HostWindow.size.Y * 0.65f)), new(HostWindow.size.X / 2, 0));
 
             windows = new List<GUIWindow> { window2, window1 };
