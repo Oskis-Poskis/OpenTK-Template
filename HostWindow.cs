@@ -23,11 +23,6 @@ namespace WindowTemplate
             Title = state.properties.title;
             WindowShader = new Shader(base_path + "Shaders/window.vert", base_path + "Shaders/window.frag", base_path + "Shaders/window.geom");
             TextShader = new Shader(base_path + "Shaders/text.vert", base_path + "Shaders/text.frag");
-
-            GUIWindow window1 = new GUIWindow($"Window {1}", new(HostWindow.size.X / 2 - 100, (int)(HostWindow.size.Y * 0.65f)), new(0));
-            GUIWindow window2 = new GUIWindow($"Window {2}", new(HostWindow.size.X / 2 - 100, (int)(HostWindow.size.Y * 0.65f)), new(HostWindow.size.X / 2, 0));
-
-            windows = new List<GUIWindow> { window2, window1 };
         }
 
         StatCounter stats = new();
@@ -36,7 +31,7 @@ namespace WindowTemplate
 
         public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
         public static Shader WindowShader, TextShader;
-        public static List<GUIWindow> windows;
+        
         int activeWindow = 0;
         WindowSaveState state = new WindowSaveState(new WindowProperties());
 
@@ -84,37 +79,12 @@ namespace WindowTemplate
 
             mouse_pos.X = MouseState.Position.X;
             mouse_pos.Y = MouseState.Position.Y;
-
-            bool leftDown = IsMouseButtonDown(MouseButton.Button1);
-            bool leftPress = IsMouseButtonPressed(MouseButton.Button1);
-            bool leftReleased = IsMouseButtonReleased(MouseButton.Button1);
-            bool altDown = IsKeyDown(Keys.LeftAlt);
-
-            for (int i = 0; i < windows.Count; i++)
-            {
-                if (leftPress &&
-                    windows[i].IsWindowHovered() &&
-                    !windows[activeWindow].IsResizing &&
-                    !windows[activeWindow].IsMoving &&
-                    (!windows[activeWindow].IsWindowHovered() | windows[activeWindow].settings.fullscreen))
-                {
-                    activeWindow = i;
-                    Console.WriteLine("Selected: " + windows[i].Title);
-                }
-
-                if (activeWindow == i)
-                {
-                    windows[i].TransformWindow(leftDown, leftPress, leftReleased, altDown);
-                    Cursor = windows[i].cursor;
-                }
-            }
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
 
-            Render();
             stats.Count(args);
             Title = stats.fps.ToString("0.0") + " | " + stats.ms.ToString("0.00");
         }
@@ -127,35 +97,67 @@ namespace WindowTemplate
             state.Resize(e.Width, e.Height);
             size = new(e.Width, e.Height);
 
-            if (WindowShader != null && windows != null)
+            // Console.WriteLine($"Resized host window to: {size.X}x{size.Y}");
+        }
+
+        public void UpdateUI(List<GUIWindow> UIWindows)
+        {
+            bool leftDown = IsMouseButtonDown(MouseButton.Button1);
+            bool leftPress = IsMouseButtonPressed(MouseButton.Button1);
+            bool leftReleased = IsMouseButtonReleased(MouseButton.Button1);
+            bool altDown = IsKeyDown(Keys.LeftAlt);
+
+            for (int i = 0; i < UIWindows.Count; i++)
             {
-                Render();
-                foreach(GUIWindow window in windows)
+                if (leftPress &&
+                    UIWindows[i].IsWindowHovered() &&
+                    !UIWindows[activeWindow].IsResizing &&
+                    !UIWindows[activeWindow].IsMoving &&
+                    (!UIWindows[activeWindow].IsWindowHovered() | UIWindows[activeWindow].settings.fullscreen))
                 {
-                    window.UpdateVertices();
+                    activeWindow = i;
+                    Console.WriteLine("Selected: " + UIWindows[i].Title);
+                }
+
+                if (activeWindow == i)
+                {
+                    UIWindows[i].TransformWindow(leftDown, leftPress, leftReleased, altDown);
+                    Cursor = UIWindows[i].cursor;
                 }
             }
         }
 
-        public void Render()
+        public void ResizeUI(List<GUIWindow> UIWindows)
+        {
+            if (WindowShader != null && UIWindows != null)
+            {
+                foreach(GUIWindow window in UIWindows)
+                {
+                    window.UpdateVertices();
+                }
+                RenderUI(UIWindows);
+            }
+        }
+
+        public void RenderUI(List<GUIWindow> UIWindows)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.ClearColor(0.75f, 0.75f, 0.75f, 1);
 
             WindowShader.Use();
-            for (int i = 0; i < windows.Count; i++)
+            for (int i = 0; i < UIWindows.Count; i++)
             {
                 if (i == activeWindow)
                 {
                     WindowShader.SetVector3("shade", new(0.75f));
-                    windows[i].z_index = 1;
+                    UIWindows[i].z_index = 1;
                 }
                 else
                 {
                     WindowShader.SetVector3("shade", new(0.5f));
-                    windows[i].z_index = 0;
+                    UIWindows[i].z_index = 0;
                 }
-                windows[i].Render(MouseState, i == activeWindow);
+                UIWindows[i].Render(MouseState, i == activeWindow);
             }
 
             SwapBuffers();
