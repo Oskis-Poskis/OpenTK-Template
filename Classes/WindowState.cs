@@ -15,13 +15,13 @@ namespace WindowTemplate
 
         public WindowProperties()
         {
-            this.title = "OpenTK - Template";
-            this.width = 1200;
-            this.height = 800;
-            this.positionx = 0;
-            this.positiony = 0;
-            this.maximized = false;
-        }
+            title = "OpenTK - Template";
+            width = 1200;
+            height = 800;
+            positionx = 0;
+            positiony = 0;
+            maximized = false;
+        }   
     }
 
     public class WindowSaveState
@@ -35,9 +35,9 @@ namespace WindowTemplate
         JsonSerializerOptions settings = new JsonSerializerOptions{ WriteIndented = true };
         string save_path = HostWindow.base_path + "Save/windowstate.txt";
 
-        unsafe public void SaveState(OpenTK.Windowing.GraphicsLibraryFramework.Window* WindowPtr)
+        unsafe public void SaveState(Window* WindowPtr)
         {
-            if (Path.Exists(HostWindow.base_path + "Save/windowstate.txt"))
+            if (Path.Exists(HostWindow.base_path + "Savewindowstate.txt"))
             {
                 Save();
             }
@@ -68,7 +68,7 @@ namespace WindowTemplate
             }
         }
 
-        unsafe public void LoadState(OpenTK.Windowing.GraphicsLibraryFramework.Window* WindowPtr)
+        unsafe public void LoadState(Window* WindowPtr)
         {
             if (Path.Exists(save_path))
             {
@@ -94,7 +94,7 @@ namespace WindowTemplate
                 properties.title = "Template";
                 properties.positionx = (int)(properties.width / 2);
                 properties.positiony = (int)(properties.height / 2);
-                Console.WriteLine("Window state file path does not exist:\n" + save_path);
+                Console.WriteLine("Window state file path does not exist, creating save file:\n" + save_path);
             }
 
             GLFW.SetWindowTitle(WindowPtr, properties.title);

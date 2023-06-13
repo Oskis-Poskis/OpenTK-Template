@@ -37,7 +37,7 @@ namespace WindowTemplate
         public static string base_path = AppDomain.CurrentDomain.BaseDirectory;
         public static Shader WindowShader, TextShader;
         public static List<GUIWindow> windows;
-        int activeIndex = 0;
+        int activeWindow = 0;
         WindowSaveState state = new WindowSaveState(new WindowProperties());
 
         private static void OnDebugMessage(
@@ -94,15 +94,15 @@ namespace WindowTemplate
             {
                 if (leftPress &&
                     windows[i].IsWindowHovered() &&
-                    !windows[activeIndex].IsResizing &&
-                    !windows[activeIndex].IsMoving &&
-                    (!windows[activeIndex].IsWindowHovered() | windows[activeIndex].settings.fullscreen))
+                    !windows[activeWindow].IsResizing &&
+                    !windows[activeWindow].IsMoving &&
+                    (!windows[activeWindow].IsWindowHovered() | windows[activeWindow].settings.fullscreen))
                 {
-                    activeIndex = i;
+                    activeWindow = i;
                     Console.WriteLine("Selected: " + windows[i].Title);
                 }
 
-                if (activeIndex == i)
+                if (activeWindow == i)
                 {
                     windows[i].TransformWindow(leftDown, leftPress, leftReleased, altDown);
                     Cursor = windows[i].cursor;
@@ -145,7 +145,7 @@ namespace WindowTemplate
             WindowShader.Use();
             for (int i = 0; i < windows.Count; i++)
             {
-                if (i == activeIndex)
+                if (i == activeWindow)
                 {
                     WindowShader.SetVector3("shade", new(0.75f));
                     windows[i].z_index = 1;
@@ -155,7 +155,7 @@ namespace WindowTemplate
                     WindowShader.SetVector3("shade", new(0.5f));
                     windows[i].z_index = 0;
                 }
-                windows[i].Render(MouseState, i == activeIndex);
+                windows[i].Render(MouseState, i == activeWindow);
             }
 
             SwapBuffers();
