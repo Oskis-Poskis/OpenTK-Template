@@ -5,7 +5,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 using WindowTemplate.Common;
-using WindowTemplate.Rendering;
+using WindowTemplate.UI;
 using WindowTemplate.Helper;
 
 using System.Runtime.InteropServices;

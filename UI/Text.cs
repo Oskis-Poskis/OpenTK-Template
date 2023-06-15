@@ -7,7 +7,7 @@ using WindowTemplate.Helper;
 using System.Drawing;
 using static System.Formats.Asn1.AsnWriter;
 
-namespace WindowTemplate.Rendering
+namespace WindowTemplate.UI
 {
     struct Character
     {

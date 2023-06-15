@@ -4,7 +4,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common.Input;
 using WindowTemplate.Helper;
 
-namespace WindowTemplate.Rendering
+namespace WindowTemplate.UI
 {
     public struct UISettings
     {
@@ -25,7 +25,6 @@ namespace WindowTemplate.Rendering
         }
     }
 
-    
     public class UIWindow
     {
         public string Title;

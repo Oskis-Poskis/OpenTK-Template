@@ -2,7 +2,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
 using WindowTemplate;
-using WindowTemplate.Rendering;
+using WindowTemplate.UI;
 
 namespace TestingProject
 {
