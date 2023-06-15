@@ -140,9 +140,6 @@ namespace WindowTemplate
 
         public void RenderUI(List<UIWindow> UIWindows)
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            GL.ClearColor(0.75f, 0.75f, 0.75f, 1);
-
             WindowShader.Use();
             for (int i = 0; i < UIWindows.Count; i++)
             {
@@ -158,8 +155,6 @@ namespace WindowTemplate
                 }
                 UIWindows[i].Render(MouseState, i == activeWindow);
             }
-
-            SwapBuffers();
         }
 
         bool enter_fullscreen = false;

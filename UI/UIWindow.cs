@@ -48,6 +48,8 @@ namespace WindowTemplate.UI
         private float collapse_size;
         private float bottom;
 
+        public float width, height;
+
         public bool[] EdgesHover = new bool[4];
         public bool IsHoveringAnyEdge =  false;
         public bool IsHoveringTitleBar = false;
@@ -153,6 +155,15 @@ namespace WindowTemplate.UI
 
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+
+            width = Vector2.Distance(new Vector2(LeftEdge + border_x, 0),
+                                     new Vector2(RightEdge - border_x, 0));
+
+            width = Vector2.Distance(new Vector2(0, BottomEdge + border_y),
+                                     new Vector2(0, TopEdge));
+
+            width = MathHelper.Clamp(HelperClass.MapRange(width, 0, 2, 0, HostWindow.size.X), 0, HostWindow.size.X);
+            height = MathHelper.Clamp(HelperClass.MapRange(height, 0, 2, 0, HostWindow.size.Y), 0, HostWindow.size.Y);
         }
 
         public void Render(MouseState mouseState, bool isActive)
@@ -359,6 +370,15 @@ namespace WindowTemplate.UI
                         }
                         else IsResizing = false;
                     }
+
+                    width = Vector2.Distance(new Vector2(LeftEdge + border_x, 0),
+                                             new Vector2(RightEdge - border_x, 0));
+
+                    width = Vector2.Distance(new Vector2(0, BottomEdge + border_y),
+                                             new Vector2(0, TopEdge));
+
+                    width = MathHelper.Clamp(HelperClass.MapRange(width, -1, 1, 0, HostWindow.size.X), 0, HostWindow.size.X);
+                    height = MathHelper.Clamp(HelperClass.MapRange(height, -1, 1, 0, HostWindow.size.Y), 0, HostWindow.size.Y);
 
                     GL.BindBuffer(BufferTarget.ArrayBuffer, mainVBO);
                     GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, main_vertices.Length * sizeof(float), main_vertices);
