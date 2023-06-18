@@ -85,7 +85,7 @@ namespace WindowTemplate
             base.OnRenderFrame(args);
 
             stats.Count(args);
-            Title = stats.fps.ToString("0.0") + " | " + stats.ms.ToString("0.00");
+            Title = stats.fps.ToString("0.0") + " FPS  |  " + stats.ms.ToString("0.00") + "ms";
         }
 
         unsafe protected override void OnResize(ResizeEventArgs e)
