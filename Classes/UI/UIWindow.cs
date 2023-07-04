@@ -168,6 +168,8 @@ namespace WindowTemplate.UI
 
         public void Render(MouseState mouseState, bool isActive)
         {
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+
             xpos = HelperClass.MapRange(HostWindow.mouse_pos.X, 0, HostWindow.size.X, -1.0f, 1.0f);
             ypos = HelperClass.MapRange(HostWindow.mouse_pos.Y, 0, HostWindow.size.Y, 1.0f, -1.0f);
 
