@@ -2,7 +2,7 @@
 ## A template for creating OpenTK projects
 > It saves the window position, size, title and whether it's maximized or not
 
-> WIP simple UI
+> WIP lightweight UI
 
 > A simple 3D example can be cloned together with this one
 
