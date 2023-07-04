@@ -12,4 +12,4 @@
 3. Create a .NET Console App inside "Your Project", or clone my [3D-Template](https://github.com/Oskis-Poskis/3D-Template) into the folder from step 1
 
 ### An example of how the folder structure:
-![Example](Assets/proj.png)
+![Example](Assets/folders.png)
