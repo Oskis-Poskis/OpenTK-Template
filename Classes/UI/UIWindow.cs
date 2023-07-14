@@ -38,12 +38,12 @@ namespace WindowTemplate.UI
         private float RightEdge =   0.5f;
         private float LeftEdge =   -0.5f;
 
-        private Vector3 hover_tint = Vector3.One;
+        private Vector3 collapse_tint = Vector3.One;
 
         private float edgeThreshold =   0.01f;
         private float min_windowSize =  0.05f;
         private float topbar_thickness, topBar_reference =  20;
-        private float border_y, border_x, border_reference = 2;
+        private float border_y, border_x, border_reference = 3;
         
         private float collapse_size;
         private float bottom;
@@ -187,13 +187,13 @@ namespace WindowTemplate.UI
             HostWindow.WindowShader.SetFloat("index", settings.fullscreen ? -1 : z_index);
             if (settings.collapsable && !settings.fullscreen)
             {
-                HostWindow.WindowShader.SetInt("interaction", 1);
-                HostWindow.WindowShader.SetVector3("tint", hover_tint);
+                HostWindow.WindowShader.SetInt("isButton", 1);
+                HostWindow.WindowShader.SetVector3("button_tint", collapse_tint);
                 GL.BindVertexArray(interactionVAO);
                 GL.DrawElements(PrimitiveType.Triangles, interaction_indices.Length, DrawElementsType.UnsignedInt, 0);
             }
 
-            HostWindow.WindowShader.SetInt("interaction", 0);
+            HostWindow.WindowShader.SetInt("isButton", 0);
             GL.BindVertexArray(mainVAO);
             GL.DrawElements(PrimitiveType.Triangles, main_indices.Length, DrawElementsType.UnsignedInt, 0);
         }
@@ -264,7 +264,7 @@ namespace WindowTemplate.UI
                                 IsCollapsed = HelperClass.ToggleBool(IsCollapsed);
                                 if (IsCollapsed)
                                 {
-                                    hover_tint = new(0.4f);
+                                    collapse_tint = new(0.4f);
                                 }
                                 UpdateVertices();
                                 Console.WriteLine("Collapsed: " + Title);
@@ -274,7 +274,7 @@ namespace WindowTemplate.UI
 
                     if (leftReleased && !IsCollapsed)
                     {
-                        hover_tint = new(1);
+                        collapse_tint = new(1);
                     }
                 }
 

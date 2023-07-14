@@ -145,12 +145,12 @@ namespace WindowTemplate
             {
                 if (i == activeWindow)
                 {
-                    WindowShader.SetVector3("shade", new(0.75f));
+                    WindowShader.SetVector3("window_shade", new(0.75f));
                     UIWindows[i].z_index = 1;
                 }
                 else
                 {
-                    WindowShader.SetVector3("shade", new(0.5f));
+                    WindowShader.SetVector3("window_shade", new(0.5f));
                     UIWindows[i].z_index = 0;
                 }
                 UIWindows[i].Render(MouseState, i == activeWindow);
