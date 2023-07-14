@@ -11,12 +11,14 @@ namespace WindowTemplate.UI
         public bool fullscreen;
         public bool collapsable;
         public bool moveable;
+        public bool displayimage;
         public bool resizeable_l, resizeable_t, resizeable_r, resizeable_b;
 
         public UISettings()
         {
             fullscreen = false;
             collapsable = true;
+            displayimage = false;
             moveable = true;
             resizeable_l = true;
             resizeable_t = true;
@@ -32,6 +34,7 @@ namespace WindowTemplate.UI
         float xpos, ypos;
         public MouseCursor cursor = MouseCursor.Default;
         public UISettings settings = new UISettings();
+        public int textureID;
 
         private float TopEdge =     0.5f;
         private float BottomEdge = -0.5f;
@@ -184,6 +187,13 @@ namespace WindowTemplate.UI
                 IsHoveringAnyEdge = (EdgesHover[0] | EdgesHover[1] | EdgesHover[2] | EdgesHover[3]);
             }
 
+            HostWindow.WindowShader.SetInt("hasTexture", Convert.ToInt32(settings.displayimage));
+            if (settings.displayimage && !IsCollapsed)
+            {
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture2D, textureID);
+            }
+
             HostWindow.WindowShader.SetFloat("index", settings.fullscreen ? -1 : z_index);
             if (settings.collapsable && !settings.fullscreen)
             {
@@ -264,7 +274,7 @@ namespace WindowTemplate.UI
                                 IsCollapsed = HelperClass.ToggleBool(IsCollapsed);
                                 if (IsCollapsed)
                                 {
-                                    collapse_tint = new(0.4f);
+                                    collapse_tint = new(0.75f);
                                 }
                                 UpdateVertices();
                                 Console.WriteLine("Collapsed: " + Title);
